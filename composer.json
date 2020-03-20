@@ -1,0 +1,23 @@
+{
+    "name": "shiptimize/module-shipping",
+    "version": "3.0.0",
+    "license": "GPL-3.0",
+    "type": "magento2-module",
+    "description": "Shiptimize shipping module",
+    "require": { 
+        "magento/framework": "102.0.*"
+    }, 
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Shiptimize\\Shipping\\": ""
+        }
+    },
+    "support": { 
+        "issues": "https://www.shiptimize.me/contact-us/",
+        "docs": "https://api.shiptimize.me/v3/docs/",
+        "email": "support@shiptimize.me"
+    }
+}

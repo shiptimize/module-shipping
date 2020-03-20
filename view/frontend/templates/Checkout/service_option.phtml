@@ -1,0 +1,45 @@
+<?php 
+    if($block->displayCheckout()){
+?>
+<div class='shiptimize-pickup'>
+          <div class='shiptimize-pickup__overlay'  onclick='shiptimize.hideMap()'></div>
+          <div class='shiptimize-pickup__mapWrapper'>
+            <div class='shiptimize-pickup__options'> 
+              <h2 class='shiptimize-pickup__title'><?php echo $block->translate('Options') ?></h2> 
+              <div class='shiptimize-pickup__other'>
+              </div>
+              <button type="button" class='button shiptimize-pickup__validate' onclick='shiptimize.selectFromList()'><?php echo $block->translate('Select')?></button>
+            </div>
+
+            <div class='shiptimize-pickup__error'></div>  
+            <div class='shiptimize-pickup__map' id='shiptimizeMap'></div>
+          </div>
+          <div class='shiptimize-pickup__close' onclick='shiptimize.hideMap()'></div>
+        </div>
+        <script>
+            var shiptimize_carriers = <?php echo json_encode($block->getCarriers())?>; 
+            var shiptimize_maps_key = '<?php  echo $block->getGmapsKey()?>'; 
+            var shiptimize_ajax_save_pickup = '<?php echo $block->getAjaxSavePickupUrl(); ?>';
+            /*var shiptimize_ajax_table_rates = '$shiptimize_ajax_table_rates'; */ 
+            var shiptimize_no_points_found = '<?php echo $block->translate('No pickup points returned by the carrier for this address')?>';
+            var shiptmize_choose = '<?php echo $block->translate('Choose Pickup Location') ?>';
+            var shiptimize_selected_pickup = '<?php echo $block->translate('Selected Pickup') ?>'; 
+            var SHIPTIMIZE_LEAFLET_URL = '<?php echo $block->getLeafletUrl()?>';
+       
+            var shiptimize_ajax_pickup_points = '<?php echo $block->getAjaxPickupPointsUrl()?>'; 
+            var shiptimize_icon_folder = '<?php echo $block->getIconFolder();?>';
+    </script> 
+    <script type="text/x-magento-init">
+        {
+            "*": {
+                "Shiptimize_Shipping/js/shiptimize": {},   
+                "Shiptimize_Shipping/js/leaflet": {},                
+                "Shiptimize_Shipping/js/shiptimize-magento": {}
+            }
+        }
+    </script>
+<?php 
+}
+else {
+  echo "<!--checkoutdisabled-->";
+}

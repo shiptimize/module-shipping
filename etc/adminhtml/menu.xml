@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu> 
+      <add id="Shiptimize_Shipping::shipping"
+             title="Shiptimize"
+             translate="title"
+             module="Shiptimize_Shipping"
+             sortOrder="45"
+             dependsOnModule="Shiptimize_Shipping"
+             resource="Shiptimize_Shipping::shipping"
+             parent="Magento_Backend::stores"
+      />
+      <add id="Shiptimize_Shipping::config"
+       title="Settings" 
+       translate="title" 
+       module="Shiptimize_Shipping" 
+       parent="Shiptimize_Shipping::shipping" 
+       sortOrder="10" 
+       dependsOnModule="Magento_Config" 
+       action="admin/system_config/edit/section/shipping" 
+       resource="Magento_Config::config_system"
+       />
+    </menu>
+</config>
