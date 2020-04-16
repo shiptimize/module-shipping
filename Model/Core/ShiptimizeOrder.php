@@ -402,6 +402,9 @@ abstract class ShiptimizeOrder
     public function escapeTextData($str)
     {
 
+        //we have found that some plugins inject the \r into data 
+        $str = preg_replace("/\r|\n/", " ",$str);
+
         // get rid of existing entities else double-escape
         $str = html_entity_decode(stripslashes($str), ENT_QUOTES, 'UTF-8');
         $str = $this->escapeNonLatin1($str);
@@ -451,7 +454,7 @@ abstract class ShiptimizeOrder
            ],
            "Customs" => [
                 'CustomsType' => $this->CustomsType,
-                'Description' => trim($this->Description) ? trim($this->Description) : 'could not find a description for this order, please input manually and send a printscreen of the original order to support',
+                'Description' => trim($this->Description) ? $this->escapeTextData($this->Description) : 'could not find a description for this order, please input manually and send a printscreen of the original order to support',
                 'HSCode' => $this->HSCode,
                 'Type' => 4,
                 'Value' => $this->Value ? number_format($this->Value, 2, '.', '') : '' , // API assumes a max of 2 decimal places

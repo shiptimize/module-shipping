@@ -290,7 +290,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                         array(
                             'Count' => $qty,
                             'Id' => $data['item_id'],
-                            'Name' => $this->escapeNonLatin1($data['name']),
+                            'Name' => $this->escapeTextData($data['name']),
                             'Type' => 4, // 1 - Gift, 2 - Documents, 3 - Sample , 4 - Other
                             'Value' => $value,
                             'Weight' => intval($weight * $qty)
@@ -299,7 +299,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
                 $this->Weight += $weight;
                 $this->Value += $value;
-                $this->Description .= $qty.' - '.$this->escapeNonLatin1($data['name']) .'; ';
+                $this->Description .= $qty.' - '.$this->escapeTextData($data['name']) .'; ';
             }
         }
 
