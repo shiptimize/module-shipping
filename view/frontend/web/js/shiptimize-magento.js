@@ -12,14 +12,22 @@ require([
             mageUrl){
 
         console.log(mageUrl.build('shiptimize/checkout/getShippingAddress')); 
+        window.quote = quote; 
+
         console.log( quote );
         console.log( checkout );
 
         window.shiptimize_get_shipping_address = function(){ 
-            console.log(quote.shippingAddress()); 
-            var addr = quote.shippingAddress(); 
-            console.log('shippingAddress ',addr);
+
+            var addr = quote.shippingAddress();
             
+            if(addr == null){
+                console.log("No shipping address was found, trying to obtain a billingAddress we can use");
+                addr = quote.billingAddress();
+            } 
+            
+            console.log('Shipping to: ',addr);
+
             window.shiptimize_address ={
                 'Streetname1':  typeof(addr.street) != 'undefined' && typeof(addr.street[0]) != 'undefined' ? addr.street[0] :'',
                 'Streetname2':  typeof(addr.street) != 'undefined' && typeof(addr.street[1]) != 'undefined' ? addr.street[1] :'',
