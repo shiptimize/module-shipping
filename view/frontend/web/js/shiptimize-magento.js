@@ -3,14 +3,15 @@
  */
 require([
         'jquery',
+        'leaflet',
         'Magento_Checkout/js/model/quote',
         'Magento_Checkout/js/checkout-data',  
         'mage/url',
     ], function ($,
+            L,
             quote,
             checkout,
-            mageUrl){
-
+            mageUrl){ 
         console.log(mageUrl.build('shiptimize/checkout/getShippingAddress')); 
         window.quote = quote; 
 
@@ -38,8 +39,7 @@ require([
                 'Country': addr.countryId,
                 "State":  typeof(addr.regionCode) != 'undefined'  ? addr.regionCode : ''
             };
-
-            // checkout.getShippingAddressFromData();
+ 
             console.log("GET SHIPPING ADDRESS quoteaddr", addr, ' shiptimize_address ', shiptimize_address);
         }; 
 });
