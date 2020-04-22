@@ -31,7 +31,13 @@
                     <label>Automatic Export</label>
                     <comment>Send Order to Shiptimize when status matches a status defined in  "Export Pre-Set"</comment>
                     <source_model>\Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field> 
+                <field id="housenumberextension" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>House Number Extension</label>
+                    <comment>Which of the street parts is the house number extension </comment> 
+                    <source_model>Shiptimize\Shipping\Model\Config\Source\StreetNumbers</source_model> 
                 </field>
+
                 <field id="carrierids" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Carrier Ids</label> 
                     <frontend_model>Shiptimize\Shipping\Block\Adminhtml\Form\Field\Carrierids</frontend_model> 

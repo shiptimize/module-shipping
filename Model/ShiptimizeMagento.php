@@ -197,8 +197,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     }
 
     /**
-     * exports all orders with the status defined in config
-     *
+     * Exports all orders with the status defined in config
      */
     public function exportAll()
     {

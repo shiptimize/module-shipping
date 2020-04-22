@@ -497,7 +497,7 @@ abstract class ShiptimizeOrder
         if (!empty($this->ShipmentItems)) {
             $data['ShipmentItems'] = $this->ShipmentItems;
         }
-         
+
         return (object) $data;
     }
 

@@ -7,7 +7,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 {
     private $magentoOrder;
     private $tableName;
-
+ 
     public function __construct(
         \Magento\Framework\App\ResourceConnection $dbResource,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
@@ -144,7 +144,12 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
         // In mage street is an array of arbitrary length set in the config
         $street = $shipping->getStreet();
+        $houseNumberExtensionField = $this->scopeConfig->getValue('shipping/shiptimizeshipping/housenumberextension', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
+        if ($houseNumberExtensionField && isset($street[$houseNumberExtensionField])) {
+            $this->NumberExtension = $street[$houseNumberExtensionField];
+        }
+ 
         $this->CompanyName = $shipping->getCompany();
         $this->Name = $shipping->getFirstname() . ' ' . $shipping->getMiddlename() . ' ' . $shipping->getLastname();
         $this->Streetname1 = $street[0];
@@ -346,7 +351,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
     {
         $results = $this->sqlSelect(sprintf(" select * from `%s` where shiptimize_order_id=%d", $this->tableName, $this->ShopItemId));
         return !empty($results) ? $results[0] : null;
-    }
+    } 
 
     /**
      * Set the message for this order
