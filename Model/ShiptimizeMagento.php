@@ -14,7 +14,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     /**
      * @var String version - the plugin version
      */
-    public static $version = '3.0.3';
+    public static $version = '3.0.4';
 
     /**
      * @var String THE app_key
@@ -77,6 +77,7 @@ class ShiptimizeMagento extends ShiptimizeV3
         $this->collectionFactory = $collectionFactory;
 
         $this->locale = $locale;
+        $this->is_dev = !isset($_SERVER['HTTP_HOST']) ||stripos($_SERVER['HTTP_HOST'], '.local') !== false ? 1 : 0;
     }
 
     /**
@@ -130,7 +131,7 @@ class ShiptimizeMagento extends ShiptimizeV3
      */
     protected function executeSQL($sql)
     {
-        if (stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
+        if ($this->is_dev) {
             error_log($sql);
         }
         $this->connection->query($sql);
@@ -142,7 +143,7 @@ class ShiptimizeMagento extends ShiptimizeV3
      * @param $order_ids - An array of order ids to export
      * @param $try - int the iteration of export
      */
-    public function exportOrders($order_ids, $try = 0)
+    public function exportOrders($order_ids, $try = 0,$addWarning=0)
     {
         $summary = (object)[
           'n_success' => 0,
@@ -188,7 +189,10 @@ class ShiptimizeMagento extends ShiptimizeV3
         $summary->nOrders = count($order_ids);
         $summary->nInvalid = $nInvalid;
 
-        $this->messageManager->addWarning($this->getExportSummary($summary));
+        if($addWarning){
+            $this->messageManager->addWarning($this->getExportSummary($summary));    
+        }
+        
         return $summary;
     }
 
@@ -224,7 +228,7 @@ class ShiptimizeMagento extends ShiptimizeV3
             array_push($order_ids, $data['entity_id']);
         }
 
-        return self::exportOrders($order_ids);
+        return self::exportOrders($order_ids,0,1);
     }
 
     /**
@@ -236,7 +240,7 @@ class ShiptimizeMagento extends ShiptimizeV3
      */
     public function sqlSelect($sql)
     {
-        if (stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
+        if ($this->is_dev) {
             error_log($sql);
         }
         return $this->connection->fetchAll($sql);
@@ -474,7 +478,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     {
         $locale = $this->locale->getLocale();
 
-        if (isset($_SERVER['HTTP_HOST']) && stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
+        if ($this->is_dev) {
             error_log("LANG: $locale");
         }
         

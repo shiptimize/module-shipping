@@ -49,7 +49,7 @@ class Export extends \Magento\Sales\Controller\Adminhtml\Order\AbstractMassActio
                 array_push($orderIds, $data['entity_id']);
             }
 
-            $this->shiptimize->exportOrders($orderIds);
+            $this->shiptimize->exportOrders($orderIds,0,1);
         }
      
         return $this->redirectFactory->create()->setPath('sales/order/index', ['_current' => true]);

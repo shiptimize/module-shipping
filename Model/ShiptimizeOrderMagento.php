@@ -28,6 +28,8 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         $this->convertOrder = $convertOrder;
         $this->trackFactory = $trackFactory;
         $this->shipmentNotifier = $shipmentNotifier;  
+
+        $this->is_dev = !isset($_SERVER['HTTP_HOST']) ||stripos($_SERVER['HTTP_HOST'], '.local') !== false ? 1 : 0;
     }
 
     /**
@@ -308,7 +310,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
     public function executeSQL($sql)
     {
-        if (stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
+        if ($this->is_dev) {
             error_log($sql);
         }
         $this->connection->query($sql);
@@ -404,7 +406,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                 return;
         }
 
-        if (stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
+        if ($this->is_dev) {
             error_log("Set  STATUS  ". $mageStatus);
         }
         $this->magentoOrder->setState($mageStatus);
@@ -478,7 +480,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
     public function sqlSelect($sql)
     {
-        if (stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
+        if ($this->is_dev) {
             error_log($sql);
         }
         return $this->connection->fetchAll($sql);
