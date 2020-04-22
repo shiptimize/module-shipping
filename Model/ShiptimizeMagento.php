@@ -474,7 +474,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     {
         $locale = $this->locale->getLocale();
 
-        if (stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
+        if (isset($_SERVER['HTTP_HOST']) && stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
             error_log("LANG: $locale");
         }
         

@@ -82,6 +82,7 @@ class ShiptimizeApiV3
         $this->token_expires = $token_expires;
         
         $this->app_id = $app_id;
+        $this->is_dev = !isset($_SERVER['HTTP_HOST'])  || stripos($_SERVER['HTTP_HOST'], '.local') !== false;
     }
 
     /**
@@ -128,7 +129,7 @@ class ShiptimizeApiV3
 
         $serverResponse = $this->sendToApi('POST', '/keys', $data);
         
-        if (stripos($_SERVER['HTTP_HOST'], '.local') !== false ) {
+        if ($this->is_dev) {
             error_log(' Received Token ' . var_export($serverResponse, true));
         }
 
@@ -192,7 +193,7 @@ class ShiptimizeApiV3
 
         if ('200' == $serverResponse->httpCode) {
             $carrier_list =   $serverResponse->response;
-            if (stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
+            if ($this->is_dev) {
                 error_log(" getCarriers ".json_encode($carrier_list));
             }
             return !$carrier_list->Error->Id ? $carrier_list->Carrier : $carrier_list;
@@ -252,7 +253,7 @@ class ShiptimizeApiV3
             'CarrierId' => $carrier_id
         ];
 
-        if (stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
+        if ($this->is_dev) {
             error_log("get_pickup_locations Address ".var_export($address, true) .";  
             Carrier :".$carrier_id);
         }
@@ -274,7 +275,7 @@ class ShiptimizeApiV3
             'accept-language'=> $accept_lang ? $accept_lang : 'en_US',
         ];
 
-        if (stripos($_SERVER['HTTP_HOST'], '.local') !== false) {
+        if ($this->is_dev) {
             error_log("postShipments ".json_encode($shipments));
         }
 
@@ -317,7 +318,8 @@ class ShiptimizeApiV3
     {
         $result = new \stdClass();
 
-        $url = ( stripos($_SERVER['HTTP_HOST'], '.local') !== false ? $this->api_url_dev : $this->api_url ) . $endpoint;
+        // this can be called from crontab or other local scripts
+        $url = ($this->is_dev ? $this->api_url_dev : $this->api_url ) . $endpoint;
         $json_data = $data ? $this->getUtf8(json_encode($data)) : '';
 
         $username = $this->isTokenValid() ? $this->token : $this->public_key;
@@ -352,7 +354,7 @@ class ShiptimizeApiV3
  
         curl_close($ch);
         error_log("Request Info: " . $this->printRequestData($method, $endpoint, $data, $headers));
-        if (stripos($_SERVER['HTTP_HOST'], '.local') !== false || $result->httpCode != 200) {
+        if ($this->is_dev || $result->httpCode != 200) {
             error_log("Request Info: " . $this->printRequestData($method, $endpoint, $data, $headers));
             error_log("Response " . json_encode($response));
         }
