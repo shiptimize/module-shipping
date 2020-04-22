@@ -5,18 +5,14 @@ require([
         'jquery',
         'leaflet',
         'Magento_Checkout/js/model/quote',
-        'Magento_Checkout/js/checkout-data',  
-        'mage/url',
+        'Shiptimize_Shipping/js/view/shipping-mixin'
     ], function ($,
             L,
-            quote,
-            checkout,
-            mageUrl){ 
-        console.log(mageUrl.build('shiptimize/checkout/getShippingAddress')); 
-        window.quote = quote; 
+            quote, 
+            shipping
+        ){  
 
-        console.log( quote );
-        console.log( checkout );
+        window.quote = quote; 
 
         window.shiptimize_get_shipping_address = function(){ 
 

@@ -133,12 +133,12 @@ abstract class ShiptimizeV3
      * @param String $string
      */
     public function __($string)
-    {
+    { 
         if (!$this->lang) {
             $this->lang  = $this->getLang();
         }
 
-        if (!isset($this->langs[$this->lang]) && file_exists(__DIR__.'/lang/'.$this->lang.'.php')) {
+        if (!isset($this->langs[$this->lang]) && file_exists(__DIR__.'/lang/'.$this->lang.'.json')) {
             try {
                 $contents  = file_get_contents(__DIR__.'/lang/'.$this->lang.'.json');
                 $this->langs[$this->lang] = json_decode($contents);

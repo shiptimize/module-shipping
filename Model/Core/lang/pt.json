@@ -43,5 +43,6 @@
     "Request account" : "Criar conta",
     "If you do not have a %s account" : "Se ainda não têm uma conta %s",
     "Carrier Exists" : "Transportadora existe",
-    "Added Carrier" : "Transportadora Adicionada"
+    "Added Carrier" : "Transportadora Adicionada",
+    "selectpickuperror": "clique em \"Escolher ponto de pickup\" e seleccione uma localização"
 }
