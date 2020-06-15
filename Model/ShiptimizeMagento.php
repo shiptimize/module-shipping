@@ -14,7 +14,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     /**
      * @var String version - the plugin version
      */
-    public static $version = '3.0.4';
+    public static $version = '3.0.5';
 
     /**
      * @var String THE app_key
@@ -77,7 +77,7 @@ class ShiptimizeMagento extends ShiptimizeV3
         $this->collectionFactory = $collectionFactory;
 
         $this->locale = $locale;
-        $this->is_dev = !isset($_SERVER['HTTP_HOST']) ||stripos($_SERVER['HTTP_HOST'], '.local') !== false ? 1 : 0;
+        $this->is_dev = !isset($_SERVER['HTTP_HOST']) || stripos($_SERVER['HTTP_HOST'], '.local') !== false  || stripos($_SERVER['HTTP_HOST'], '.test') !== false ? 1 : 0; 
     }
 
     /**
@@ -177,6 +177,10 @@ class ShiptimizeMagento extends ShiptimizeV3
         if ($response->httpCode == 401 && $try < 1) {
             $this->refreshToken();
             return $this->exportOrders($order_ids, 1);
+        }
+
+        if ($response->httpCode != 200) {
+          $this->messageManager->addError("The API returned an error $response->httpCode no orders where exported ");
         }
 
         $summary = $this->shipmentsResponse($response);

@@ -412,6 +412,11 @@ class  {$className} extends \Shiptimize\Shipping\Model\Carrier\ShiptimizeShippin
         $sync_carriers = [];
 
         foreach ($carriers as $carrier) {
+            if(!isset($carrier->Name)){
+                error_log("Invalid Carrier ".json_encode($carrier));
+                continue;
+            }
+
             if (!$this->isMagentoCarrier($carrier)) {
                 $this->messageManager->addWarning($labels['carrier_new'].' '.$carrier->Name);
             } else {

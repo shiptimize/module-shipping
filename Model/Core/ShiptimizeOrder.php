@@ -402,25 +402,34 @@ abstract class ShiptimizeOrder
     public function escapeTextData($str)
     {
 
-        //we have found that some plugins inject the \r into data 
-        $str = preg_replace("/\r|\n/", " ",$str);
+
+        //It's the wild wild web... and people import stuff from everywhere 
+        //We've seen these things pop up... 
+        $str = preg_replace("/\r|\n|\t|\'|\"/", " ",$str);
 
         // get rid of existing entities else double-escape
-        $str = html_entity_decode(stripslashes($str), ENT_QUOTES, 'UTF-8');
-        $str = $this->escapeNonLatin1($str);
-        $ar = preg_split('/(?<!^)(?!$)/u', $str);  // return array of every multi-byte character
-        $str2 = '';
-        foreach ($ar as $c) {
-            $o = ord($c);
-            if ((strlen($c) > 1) || /* multi-byte [unicode] */
-                ($o <32 || $o > 126) || /* <- control / latin weirdos -> */
-                ($o >33 && $o < 40) || /* quotes + ambersand */
-                ($o >59 && $o < 63) /* html */
-            ) {
-                $c = mb_encode_numericentity($c, [0x0, 0xffff, 0, 0xffff], 'UTF-8');
+        $str = html_entity_decode(stripslashes($str),ENT_QUOTES,'UTF-8');
+        $str = $this->escapeNonLatin1($str); 
+        $ar = preg_split('/(?<!^)(?!$)/u', $str );  // return array of every multi-byte character
+        $str2 = '';  
+        foreach ($ar as $c){
+            $o = ord($c); 
+            if ( (strlen($c) > 1) || /* multi-byte [unicode] */
+                ($o > 126)  /* <- control / latin weirdos -> */  
+            ) { 
+                $c = mb_encode_numericentity($c,array (0x0, 0xffff, 0, 0xffff), 'UTF-8');
             }
-            $str2 .= $c;
-        }
+ 
+            #Anything bellow 32 in ascii is useless trash replace it with a space 
+            if($o > 31 || strlen($c) > 1){
+                $str2 .= $c;
+            }
+            else {
+                error_log("invalid char $c");
+                $str2 .= ' '; 
+            }            
+        } 
+
         return trim($str2);
     }
 

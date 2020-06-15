@@ -15,7 +15,8 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
         error_log(" Setup Shiptimize [" . $context->getVersion() . ']');
         if (version_compare($context->getVersion(), '3.0.0', '<')) {
             $connection = $installer->getConnection();
-
+            
+            error_log("Adding shiptimze custom table rates ");
             $ratesTable = $connection->newTable($installer->getTable('shiptimize_customtablerates'))
                 ->addColumn(
                     'id',
@@ -82,6 +83,7 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
 
             $installer->getConnection()->createTable($ratesTable);
 
+            error_log("Adding shiptimze table ");
             $table = $connection->newTable($installer->getTable('shiptimize'))
                 ->addColumn(
                     'shiptimize_order_id',

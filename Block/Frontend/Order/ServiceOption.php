@@ -47,20 +47,26 @@ class ServiceOption extends \Magento\Framework\View\Element\Template
     }
 
     public function getPickupPoint()
-    {
+    { 
         $order = $this->coreRegistry->registry('current_order');
         
         $this->shiptimizeOrder->bootstrap($order->getId());
         $html = '';
         $meta = $this->shiptimizeOrder->getOrderMeta();
 
-        if ($meta) {
-            $html = "<div class='block'><div  class='box'><strong class='box-title'><span>";
-            $html .= $this->shiptimize->__("Selected Pickup");
-            $html .= "</span></strong><div class='box-content'>";
-            $html .= $meta['shiptimize_pickup_label'];
-
-            $html .="</div>";
+        if ($meta &&  $meta['shiptimize_pickup_label'] ) {
+            $html = "<div class='block'> 
+                        <div  class='box'>
+                            <strong class='box-title'>
+                                <span>
+                                    ".$this->shiptimize->__("Selected Pickup")."
+                                </span>
+                            </strong>
+                            <div class='box-content'>
+                            " . $meta['shiptimize_pickup_label'] . "
+                            </div>
+                        </div>
+                    </div>";
         }
 
         return $html;
