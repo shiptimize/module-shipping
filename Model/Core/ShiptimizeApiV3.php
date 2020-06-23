@@ -82,7 +82,7 @@ class ShiptimizeApiV3
         $this->token_expires = $token_expires;
         
         $this->app_id = $app_id;
-        $this->is_dev = !isset($_SERVER['HTTP_HOST']) || stripos($_SERVER['HTTP_HOST'], '.local') !== false  || stripos($_SERVER['HTTP_HOST'], '.test') !== false ? 1 : 0;
+        $this->is_dev = defined("SHIPTIMIZE_DEV_MACHINE") && SHIPTIMIZE_DEV_MACHINE ? 1 : 0;
     }
 
     /**

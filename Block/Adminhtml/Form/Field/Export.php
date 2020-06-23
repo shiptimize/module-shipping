@@ -12,8 +12,8 @@ class Export extends \Magento\Config\Block\System\Config\Form\Field
       */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
-        array $data = [],
-        \Magento\Backend\Model\UrlInterface $backendUrl
+        \Magento\Backend\Model\UrlInterface $backendUrl,
+        array $data = array()
     ) {
         parent::__construct($context, $data); 
         $this->_backendUrl = $backendUrl; 

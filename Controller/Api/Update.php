@@ -4,7 +4,7 @@ namespace Shiptimize\Shipping\Controller\Api;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 
-class Update extends \Magento\Framework\App\Action\Action  implements \Magento\Framework\App\CsrfAwareActionInterface
+class Update extends \Magento\Framework\App\Action\Action
 {
  
     private $shiptimize;
@@ -28,27 +28,7 @@ class Update extends \Magento\Framework\App\Action\Action  implements \Magento\F
         $this->resultJsonFactory = $resultJsonFactory;
         $this->shiptimize = $shiptimize;
     }
-
-    /**
-     * @param RequestInterface $request
-     *
-     * @return bool|null
-     */
-    public function validateForCsrf(RequestInterface $request): ?bool
-    {
-        return true;
-    }
-
-    /**
-     * Validation is done using the private key and a hash on the apiUpdate method
-     * @param RequestInterface $request
-     *
-     * @return InvalidRequestException|null
-     */
-    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
-    {
-        return null;
-    }
+ 
 
     /**
      * @return ResponseInterface|ResultInterface|Page

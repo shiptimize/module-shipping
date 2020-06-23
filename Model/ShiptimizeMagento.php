@@ -14,7 +14,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     /**
      * @var String version - the plugin version
      */
-    public static $version = '3.0.4';
+    public static $version = '3.0.5';
 
     /**
      * @var String THE app_key
