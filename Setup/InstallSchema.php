@@ -22,7 +22,7 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
                     'id',
                     \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                     null,
-                    [ 'identity' => true, 'unsigned' => true, 'nullable' => 'false',
+                    [ 'identity' => true, 'unsigned' => true, 'nullable' => false,
                                     'primary' => true, 'comment' => 'the rule id']
                 )->addColumn(
                     'dest_country_id',
