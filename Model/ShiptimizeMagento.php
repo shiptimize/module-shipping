@@ -14,7 +14,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     /**
      * @var String version - the plugin version
      */
-    public static $version = '3.0.5';
+    public static $version = '3.0.6';
 
     /**
      * @var String THE app_key
@@ -63,7 +63,8 @@ class ShiptimizeMagento extends ShiptimizeV3
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Shiptimize\Shipping\Model\ShiptimizeOrderMagentoFactory $orderFactory,
         \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $collectionFactory,
-        \Magento\Framework\Locale\Resolver $locale
+        \Magento\Framework\Locale\Resolver $locale,
+        \Magento\Framework\App\Filesystem\DirectoryList $directory_list
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->configWriter = $configWriter;
@@ -76,8 +77,8 @@ class ShiptimizeMagento extends ShiptimizeV3
         $this->orderFactory = $orderFactory;
         $this->collectionFactory = $collectionFactory;
 
-        $this->locale = $locale;
-        $this->is_dev = !isset($_SERVER['HTTP_HOST']) || stripos($_SERVER['HTTP_HOST'], '.local') !== false  || stripos($_SERVER['HTTP_HOST'], '.test') !== false ? 1 : 0; 
+        $this->locale = $locale; 
+        $this->is_dev = file_exists($directory_list->getRoot().'/isdevmachine') ? 1 : 0; 
     }
 
     /**
@@ -261,8 +262,8 @@ class ShiptimizeMagento extends ShiptimizeV3
             $privatekey = $this->scopeConfig->getValue('shipping/shiptimizeshipping/privatekey', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
             $token =  $this->scopeConfig->getValue('shipping/shiptimizeshipping/token', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
             $tokenexpires = $this->scopeConfig->getValue('shipping/shiptimizeshipping/token_expires', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-
-            $this->api = ShiptimizeApiV3::instance(trim($publickey), trim($privatekey), self::$SHIPTIMIZE_MAGENTO, trim($token), $tokenexpires);
+            error_log("Shiptimize Magento is dev " . $this->is_dev);
+            $this->api = ShiptimizeApiV3::instance(trim($publickey), trim($privatekey), self::$SHIPTIMIZE_MAGENTO, trim($token), $tokenexpires, $this->is_dev);
         }
 
         return  $this->api;

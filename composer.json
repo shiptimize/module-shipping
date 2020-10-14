@@ -1,6 +1,5 @@
 {
-    "name": "shiptimize/module-shipping",
-    "version": "3.0.5",
+    "name": "shiptimize/module-shipping", 
     "license": "GPL-3.0",
     "type": "magento2-module",
     "description": "Shiptimize shipping module",

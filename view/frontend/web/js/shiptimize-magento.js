@@ -5,14 +5,36 @@ require([
         'jquery',
         'leaflet',
         'Magento_Checkout/js/model/quote',
-        'Shiptimize_Shipping/js/view/shipping-mixin'
+        'Shiptimize_Shipping/js/view/shipping-mixin',
+        'uiRegistry',
+        'Magento_Checkout/js/checkout-data',
+        'Magento_Checkout/js/model/checkout-data-resolver'
     ], function ($,
             L,
             quote, 
-            shipping
+            shipping,
+            registry,
+            checkoutData,
+            checkoutDataResolver
         ){  
 
         window.quote = quote; 
+        /** 
+         * Not all magento configs will write the address the same way. 
+         * Client side plugins will dump it to storage
+         */ 
+        window.shiptimize_get_shipping_address_from_checkout = function(){
+            var shippingAddressData = checkoutData.getShippingAddressFromData();
+             registry.async('checkoutProvider')(function (checkoutProvider) {
+                checkoutProvider.set(
+                    'shippingAddress',
+                    $.extend({}, checkoutProvider.get('shippingAddress'), shippingAddressData)
+                );
+            });
+            checkoutDataResolver.resolveShippingAddress();
+
+            return shippingAddressData; 
+        };
 
         window.shiptimize_get_shipping_address = function(){ 
 
@@ -22,6 +44,11 @@ require([
                 console.log("No shipping address was found, trying to obtain a billingAddress we can use");
                 addr = quote.billingAddress();
             } 
+
+            if(!addr.city){
+                addr = shiptimize_get_shipping_address_from_checkout(); 
+            }
+
             
             console.log('Shipping to: ',addr);
 

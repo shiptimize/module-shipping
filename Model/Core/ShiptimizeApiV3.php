@@ -74,7 +74,7 @@ class ShiptimizeApiV3
     protected $debug = false;
 
 
-    private function __construct($public_key, $private_key, $app_id, $token = '', $token_expires = '')
+    private function __construct($public_key, $private_key, $app_id, $token = '', $token_expires = '', $is_dev=false)
     {
         $this->private_key = $private_key;
         $this->public_key = $public_key;
@@ -82,7 +82,7 @@ class ShiptimizeApiV3
         $this->token_expires = $token_expires;
         
         $this->app_id = $app_id;
-        $this->is_dev = defined("SHIPTIMIZE_DEV_MACHINE") && SHIPTIMIZE_DEV_MACHINE ? 1 : 0;
+        $this->is_dev = $is_dev; 
     }
 
     /**
@@ -95,10 +95,10 @@ class ShiptimizeApiV3
      *
      * @return ShiptimizeApi - instance.
      */
-    public static function instance($public_key, $private_key, $app_id, $token = '', $token_expires = '')
+    public static function instance($public_key, $private_key, $app_id, $token = '', $token_expires = '', $is_dev = false)
     {
         if (is_null(self::$_instance)) {
-            self::$_instance = new self($public_key, $private_key, $app_id, $token, $token_expires);
+            self::$_instance = new self($public_key, $private_key, $app_id, $token, $token_expires, $is_dev);
         }
         
         return self::$_instance;
