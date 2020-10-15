@@ -14,7 +14,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     /**
      * @var String version - the plugin version
      */
-    public static $version = '3.0.6';
+    public static $version = '3.0.7';
 
     /**
      * @var String THE app_key
@@ -320,7 +320,11 @@ class ShiptimizeMagento extends ShiptimizeV3
      */
     public function getCallbackURL()
     {
-        return $this->storeManager->getStore()->getBaseUrl().'shiptimize/api/update';
+        $platform_version = $this->productMeta->getVersion();
+        $matches = array(); 
+        preg_match("/([\d]{1}\.[\d]{1})/", $platform_version, $matches);
+        $controller = !empty($matches) && $matches[1] == '2.2' ? '22' : ''; 
+        return $this->storeManager->getStore()->getBaseUrl().'shiptimize/api/update'.$controller;
     }
     
     /**

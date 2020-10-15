@@ -4,7 +4,10 @@ namespace Shiptimize\Shipping\Controller\Api;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 
-class Update extends \Magento\Framework\App\Action\Action
+/** 
+* Requests in magento 2.2 have a different format 
+*/
+class Update22 extends \Magento\Framework\App\Action\Action
 {
  
     private $shiptimize;
