@@ -345,8 +345,9 @@ abstract class ShiptimizeOrder
             $this->Description = substr($this->Description, 0, 255);
 
             //Make sure we are not sending a broken special char
+            $descChars = str_split($this->Description); 
             for ($i = 254; $i > 251; --$i) {
-                if ($this->Description{$i} == '&') {
+                if ($descChars[$i] == '&') {
                     $this->Description = substr($this->Description, 0, $i);
                 }
             }

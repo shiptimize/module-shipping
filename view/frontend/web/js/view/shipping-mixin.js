@@ -5,6 +5,10 @@ define([], function () {
 
     return Shipping.extend({
       validateShippingInformation: function () {
+        if(typeof(shiptimize) == 'undefined'){
+          console.log("checkout is not enabled in the shiptimize plugin");
+          return this._super();
+        }
 
         console.log('validateShippingInformation', shiptimize_label_select_pickup);
         const id = shiptimize.platform.getSelectedShipppingMethod();
