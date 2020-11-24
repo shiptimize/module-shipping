@@ -82,7 +82,7 @@ class ShiptimizeApiV3
         $this->token_expires = $token_expires;
         
         $this->app_id = $app_id;
-        $this->is_dev = $is_dev; 
+        $this->is_dev = $is_dev;  
     }
 
     /**
@@ -321,7 +321,7 @@ class ShiptimizeApiV3
         // this can be called from crontab or other local scripts
         $url = ($this->is_dev ? $this->api_url_dev : $this->api_url ) . $endpoint;
         $json_data = $data ? $this->getUtf8(json_encode($data)) : '';
-
+     
         $username = $this->isTokenValid() ? $this->token : $this->public_key;
         $password = $this->getRequestSignature($username.$json_data);
 
@@ -353,7 +353,7 @@ class ShiptimizeApiV3
         $result->httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
  
         curl_close($ch);
-        error_log("Request Info: " . $this->printRequestData($method, $endpoint, $data, $headers));
+
         if ($this->is_dev || $result->httpCode != 200) {
             error_log("Request Info: " . $this->printRequestData($method, $endpoint, $data, $headers));
             error_log("Response " . json_encode($response));

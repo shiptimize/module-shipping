@@ -73,6 +73,7 @@ class ServiceOption extends \Magento\Framework\View\Element\Template
                 )
             );
         }
+        
         return $shiptimize_carriers;
     }
 

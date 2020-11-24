@@ -14,7 +14,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     /**
      * @var String version - the plugin version
      */
-    public static $version = '3.0.8';
+    public static $version = '3.0.9';
 
     /**
      * @var String THE app_key
@@ -78,7 +78,7 @@ class ShiptimizeMagento extends ShiptimizeV3
         $this->collectionFactory = $collectionFactory;
 
         $this->locale = $locale; 
-        $this->is_dev = file_exists($directory_list->getRoot().'/isdevmachine') ? 1 : 0; 
+        $this->is_dev = file_exists($directory_list->getRoot().'/isdevmachine') ? 1 : 0;
     }
 
     /**

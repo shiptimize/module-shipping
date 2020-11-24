@@ -214,10 +214,11 @@ class TableRatesModel
             "Cost",
             "Display Name");
 
-        $content = "'" . join($columnNames,",") . "'";
+        $content = "\"" . join("\",\"",$columnNames) . "\"\n";
+
 
         foreach ($rates as $rate ) {
-            $content .= "\n\"".join(array(
+            $content .= "\"".join('","',array(
                 $rate['dest_country_id'],
                 $rate['dest_region_id'],
                 $rate['dest_zip'],
@@ -227,8 +228,10 @@ class TableRatesModel
                 $rate['carrier_id'],
                 $rate['carrier_options'],
                 $rate['price'],
-                $rate['display_name']
-            ),'","')."\"";
+                trim($rate['display_name'])
+            ))."\"";
+
+            $content.="\n";
         }
 
         $f = fopen( $ratesfile, 'w' );

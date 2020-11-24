@@ -104,8 +104,7 @@ class CustomTableRates extends \Magento\Framework\App\Config\Value
             $line = str_replace("\"", "", $line);
             $csvLine =  explode($separator, $line);
 
-            ++$rowNumber;
-
+            ++$rowNumber; 
             if ($rowNumber > 1) {
                 $rate = new \stdClass();
                 $rate->dest_country_id = $this->_getCountryIdFromCode( trim(strtoupper($csvLine[0])));
@@ -115,7 +114,7 @@ class CustomTableRates extends \Magento\Framework\App\Config\Value
                 $rate->min_weight = $this->tableRates->getNumericValue($csvLine[4]);
                 $rate->min_items = $this->tableRates->getNumericValue($csvLine[5]);
                 $rate->carrier_id = trim($csvLine[6]);
-                $rate->carrier_options = $csvLine[7];
+                $rate->carrier_options = isset($csvLine[7]) ? $csvLine[7] : '';
                 $rate->price = $this->tableRates->getNumericValue($csvLine[8]);
 
                 if (isset($csvLine[9])) {
