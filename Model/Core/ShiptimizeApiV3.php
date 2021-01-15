@@ -337,10 +337,11 @@ class ShiptimizeApiV3
             CURLOPT_USERPWD => $username . ":" . $password,
             CURLOPT_RETURNTRANSFER => true,
             CURLINFO_HEADER_OUT => true,
+            CURLOPT_SSL_VERIFYHOST => false, 
+            CURLOPT_SSL_VERIFYPEER => false
         ];
         
-        curl_setopt_array($ch, $options);
-
+        curl_setopt_array($ch, $options); 
 
         if ($method == 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);

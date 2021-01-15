@@ -22,7 +22,7 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
                     'id',
                     \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                     null,
-                    [ 'identity' => true, 'unsigned' => true, 'nullable' => 'false',
+                    [ 'identity' => true, 'unsigned' => true, 'nullable' => false,
                                     'primary' => true, 'comment' => 'the rule id']
                 )->addColumn(
                     'dest_country_id',
@@ -43,17 +43,17 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
                     'min_price',
                     \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
                     '10,4',
-                    [  'unsigned' => true, 'nullable' => 'false','comment' => 'min price']
+                    [  'unsigned' => true, 'nullable' => false,'comment' => 'min price']
                 )->addColumn(
                     'min_weight',
                     \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
                     '10,4',
-                    [  'unsigned' => true, 'nullable' => 'false','comment' => 'min weight']
+                    [  'unsigned' => true, 'nullable' => false,'comment' => 'min weight']
                 )->addColumn(
                     'min_items',
                     \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                     null,
-                    [  'unsigned' => true, 'nullable' => 'false', 'comment' => 'min items']
+                    [  'unsigned' => true, 'nullable' => false, 'comment' => 'min items']
                 )->addColumn(
                     'carrier_id',
                     \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
@@ -68,7 +68,7 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
                     'price',
                     \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
                     '10,4',
-                    [  'unsigned' => true, 'nullable' => 'false','comment' => 'price for this rule']
+                    [  'unsigned' => true, 'nullable' => false,'comment' => 'price for this rule']
                 )->addColumn(
                     'display_name',
                     \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
@@ -78,7 +78,7 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
                     'has_pickup',
                     \Magento\Framework\DB\Ddl\Table::TYPE_SMALLINT,
                     null,
-                    [  'unsigned' => true, 'nullable' => 'false', 'comment' => 'does this rule provide Servicepoints']
+                    [  'unsigned' => true, 'nullable' => false, 'comment' => 'does this rule provide Servicepoints']
                 );
 
             $installer->getConnection()->createTable($ratesTable);
@@ -89,34 +89,34 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
                     'shiptimize_order_id',
                     \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                     null,
-                    [ 'identity' => false, 'unsigned' => true, 'nullable' => 'false', 'primary' => false,
+                    [ 'identity' => false, 'unsigned' => true, 'nullable' => false, 'primary' => false,
                     'comment' => 'Order id of magento']
                 )
                 ->addColumn(
                     'shiptimize_status',
                     \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                     null,
-                    [ 'identity' => false, 'unsigned' => true, 'nullable' => 'true',
+                    [ 'identity' => false, 'unsigned' => true, 'nullable' => true,
                                     'primary' => false, 'comment' => 'Exported to shiptimize Status']
                 )->addColumn(
                     'shiptimize_tracking_id',
                     \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
                     90,
-                    [ 'identity' => false, 'unsigned' => true, 'nullable' => 'true',
+                    [ 'identity' => false, 'unsigned' => true, 'nullable' => true,
                                     'primary' => false, 'comment' => 'Tracking_id']
                 )
                 ->addColumn(
                     'shiptimize_carrier_id',
                     \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                     null,
-                    [ 'identity' => false, 'unsigned' => true, 'nullable' => 'true',
+                    [ 'identity' => false, 'unsigned' => true, 'nullable' => true,
                                     'primary' => false, 'comment' => 'Shiptimize carrier id']
                 )
                 ->addColumn(
                     'shiptimize_pickup_id',
                     \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
                     100,
-                    [ 'identity' => false, 'unsigned' => true, 'nullable' => 'true',
+                    [ 'identity' => false, 'unsigned' => true, 'nullable' => true,
                                     'primary' => false, 'comment' => 'Shiptimize carrier id']
                 )
                 ->addColumn(
