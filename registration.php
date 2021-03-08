@@ -2,5 +2,5 @@
 \Magento\Framework\Component\ComponentRegistrar::register(
     \Magento\Framework\Component\ComponentRegistrar::MODULE,
     'Shiptimize_Shipping',
-    __DIR__
+    isset($file) && realpath($file) == __FILE__ ? dirname($file) : __DIR__
 );

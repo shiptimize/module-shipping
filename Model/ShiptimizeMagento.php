@@ -8,18 +8,10 @@ error_reporting(E_ALL ^ E_STRICT);
 use Shiptimize\Shipping\Model\Core\ShiptimizeV3;
 use Shiptimize\Shipping\Model\Core\ShiptimizeApiV3;
 use Shiptimize\Shipping\Model\Core\ShiptimizeOrder;
+use Shiptimize\Shipping\Model\ShiptimizeConstants;
 
 class ShiptimizeMagento extends ShiptimizeV3
 {
-    /**
-     * @var String version - the plugin version
-     */
-    public static $version = '3.0.10';
-
-    /**
-     * @var String THE app_key
-     */
-    public static $SHIPTIMIZE_MAGENTO = '69710227-6298-3C4C-8386-F6DB72B04BAD';
 
     /**
      * @var String BRAND
@@ -64,7 +56,8 @@ class ShiptimizeMagento extends ShiptimizeV3
         \Shiptimize\Shipping\Model\ShiptimizeOrderMagentoFactory $orderFactory,
         \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $collectionFactory,
         \Magento\Framework\Locale\Resolver $locale,
-        \Magento\Framework\App\Filesystem\DirectoryList $directory_list
+        \Magento\Framework\App\Filesystem\DirectoryList $directory_list,
+        \Magento\Framework\Module\ResourceInterface $db_resource // get the module version 
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->configWriter = $configWriter;
@@ -78,7 +71,9 @@ class ShiptimizeMagento extends ShiptimizeV3
         $this->collectionFactory = $collectionFactory;
 
         $this->locale = $locale; 
-        $this->is_dev = file_exists($directory_list->getRoot().'/isdevmachine') ? 1 : 0;
+
+        $this->db_resource = $db_resource;
+        $this->is_dev = file_exists($directory_list->getRoot().'/isdevmachine') ? 1 : 0; 
     }
 
     /**
@@ -263,7 +258,7 @@ class ShiptimizeMagento extends ShiptimizeV3
             $token =  $this->scopeConfig->getValue('shipping/shiptimizeshipping/token', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
             $tokenexpires = $this->scopeConfig->getValue('shipping/shiptimizeshipping/token_expires', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
             error_log("Shiptimize Magento is dev " . $this->is_dev);
-            $this->api = ShiptimizeApiV3::instance(trim($publickey), trim($privatekey), self::$SHIPTIMIZE_MAGENTO, trim($token), $tokenexpires, $this->is_dev);
+            $this->api = ShiptimizeApiV3::instance(trim($publickey), trim($privatekey), ShiptimizeConstants::$SHIPTIMIZE_MAGENTO, trim($token), $tokenexpires, $this->is_dev);
         }
 
         return  $this->api;
@@ -305,7 +300,7 @@ class ShiptimizeMagento extends ShiptimizeV3
             'Expire' => ''
         ]);
 
-        $token = $api->getToken($this->getCallbackURL(), $platform_version, self::$version);
+        $token = $api->getToken($this->getCallbackURL(), $platform_version, $this->db_resource->getDbVersion('Shiptimize_Shipping'));
 
         if (isset($token->Key)) {
             $this->saveToken($token);

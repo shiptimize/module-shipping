@@ -1,6 +1,8 @@
 <?php
 namespace Shiptimize\Shipping\Model\Core;
 
+use Shiptimize\Shipping\Model\ShiptimizeConstants;
+
 /**
  * The V3 of the api
  */
@@ -51,13 +53,6 @@ class ShiptimizeApiV3
     protected $app_id = null;
 
     /**
-     * The api url
-     * @var String
-     * @since 1.0.0
-     */
-    protected $api_url = 'https://api.pakketmail.nl/v3';
-
-    /**
      * The local dev url
      */
     protected $api_url_dev = 'http://api.local:8080/v3';
@@ -82,7 +77,7 @@ class ShiptimizeApiV3
         $this->token_expires = $token_expires;
         
         $this->app_id = $app_id;
-        $this->is_dev = $is_dev;  
+        $this->is_dev = $is_dev;
     }
 
     /**
@@ -208,7 +203,7 @@ class ShiptimizeApiV3
      */
     private function printRequestData($method, $endpoint, $data, $headers)
     {
-        $url = $this->api_url.$endpoint;
+        $url = ($this->is_dev ? $this->api_url_dev :  ShiptimizeConstants::$API_URL) . $endpoint;
         $json_data = json_encode($data);
         $username = $this->isTokenValid() ? $this->token : $this->public_key;
         $password = $this->getRequestSignature($json_data);
@@ -316,12 +311,12 @@ class ShiptimizeApiV3
      */
     protected function sendToApi($method = 'GET', $endpoint, $data = '', $headers = [])
     {
-        $result = new \stdClass();
+        $result = new \stdClass(); 
 
         // this can be called from crontab or other local scripts
-        $url = ($this->is_dev ? $this->api_url_dev : $this->api_url ) . $endpoint;
+        $url = ($this->is_dev ? $this->api_url_dev :  ShiptimizeConstants::$API_URL ) . $endpoint;
         $json_data = $data ? $this->getUtf8(json_encode($data)) : '';
-     
+
         $username = $this->isTokenValid() ? $this->token : $this->public_key;
         $password = $this->getRequestSignature($username.$json_data);
 
@@ -337,11 +332,10 @@ class ShiptimizeApiV3
             CURLOPT_USERPWD => $username . ":" . $password,
             CURLOPT_RETURNTRANSFER => true,
             CURLINFO_HEADER_OUT => true,
-            CURLOPT_SSL_VERIFYHOST => false, 
-            CURLOPT_SSL_VERIFYPEER => false
         ];
         
-        curl_setopt_array($ch, $options); 
+        curl_setopt_array($ch, $options);
+
 
         if ($method == 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);

@@ -245,6 +245,11 @@ abstract class ShiptimizeOrder
         $this->ShopItemId = $id;
         $this->bootstrap();
     }
+
+    /** 
+     * @param string $message
+     */ 
+    public abstract function addMessage($message);
  
 
     /**
@@ -325,17 +330,17 @@ abstract class ShiptimizeOrder
 
 //      Sometimes people will input - To mean Idfk why are you asking me to input this?
         if ($this->Phone && strlen($this->Phone) < 3) {
-            $this->add_message($this->get_formated_message("Invalid Phone [$this->Phone] ignoring"));
+            $this->addMessage($this->get_formated_message("Invalid Phone [$this->Phone] ignoring"));
             $this->Phone = '';
         }
 
         if ($this->State && strlen($this->State) < 2) {
-            $this->add_message($this->get_formated_message("Invalid State [$this->State] ignoring"));
+            $this->addMessage($this->get_formated_message("Invalid State [$this->State] ignoring"));
             $this->State = '';
         }
 
         if ($this->CompanyName && strlen($this->CompanyName) < 3) {
-            $this->add_message($this->get_formated_message("Invalid CompanyName[$this->CompanyName] ignoring "));
+            $this->addMessage($this->get_formated_message("Invalid CompanyName[$this->CompanyName] ignoring "));
             $this->CompanyName = '';
         }
 
@@ -352,17 +357,19 @@ abstract class ShiptimizeOrder
                 }
             }
         }
-    } /** 
-     * Remove all non-latin one characters we can find since our app does not support it 
-     * In this list are all 3 byte latin1 accented chars  
-     */ 
-    public function escapeNonLatin1($str){
+    }
+
+    /**
+     * Remove all non-latin one characters we can find since our app does not support it
+     */
+    public function escapeNonLatin1($str)
+    {
         $normalize = array(
-            'Ā'=>'A','Ă'=>'A','Ą'=>'A','Ḁ'=>'A', 'Ắ' => 'A',
+            'Ā'=>'A','Ă'=>'A','Ą'=>'A','Ḁ'=>'A', 'Ắ'=>'A',
             'Ḃ'=>'B','Ḅ' => 'B', 'Ḇ' => 'B',
             'Ć'=>'C','Ĉ'=>'C','Ċ'=>'C','Č'=>'C','Ḉ' => 'C',
             'Đ'=>'D','Ḋ' => 'D','Ḍ' => 'D','Ḏ' => 'D','Ḑ' => 'D','Ḓ' => 'D',
-            'Ē'=>'E','Ĕ'=>'E','Ė'=>'E','Ę'=>'E','Ě'=>'E','Ḕ' => 'E','Ḗ' => 'E','Ḙ' => 'E','Ḛ' => 'E','Ḝ' => 'E','Ẽ‬'=> 'E',
+            'Ē'=>'E','Ĕ'=>'E','Ė'=>'E','Ę'=>'E','Ě'=>'E','Ḕ' => 'E','Ḗ' => 'E','Ḙ' => 'E','Ḛ' => 'E','Ḝ' => 'E','Ẽ‬'=>'E',
             'ā'=>'a','ă'=>'a','ą'=>'a','ḁ' => 'a', 
             'ḃ' => 'b','ḅ' => 'b','ḇ' => 'b',
             'ć'=>'c','ĉ'=>'c','ċ'=>'c','č'=>'c','ḉ' => 'c',
@@ -424,14 +431,15 @@ abstract class ShiptimizeOrder
         return strtr($str, $normalize);
     }
 
-    /** 
-     * Because you don't know what a nightmare char encodings are untill you 
-     * make software that is used accross borders 
+    /**
+     * Because you don't know what a nightmare char encodings are untill you
+     * make software that is used accross borders
      * Unicode-proof htmlentities.
      * Returns 'normal' chars as chars and weirdos as numeric html entites.
-     */  
-    public function escapeTextData( $str ){
-
+     */
+    public function escapeTextData($str)
+    {
+        
         //It's the wild wild web... and people import stuff from everywhere 
         //We've seen these things pop up... 
         $str = preg_replace("/\r|\n|\t|\'|\"/", " ",$str);
@@ -450,7 +458,7 @@ abstract class ShiptimizeOrder
                 $str2 .= $c; 
             }  
             else {
-                error_log("invalid char o: $o - c:$c");
+                error_log("invalid char o: $o - c:[$c]");
                 $str2 .= ' '; 
             }               
         } 
