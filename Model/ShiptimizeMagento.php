@@ -85,7 +85,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     public function apiUpdate()
     {
         $content = file_get_contents("php://input");
-        $this->log(" API_UPDATE ".var_export($content, true));
+        $this->log(" API_UPDATE ".var_export($content, true),  true);
 
         if (!trim($content)) {
             return ['Error' => "No Content"];

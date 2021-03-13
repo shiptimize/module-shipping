@@ -441,6 +441,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         ));
 
         $shipment->addTrack($track)->save();
+        $this->addMessage("<br/>TrackingId received from the api: $tracking_id ");
     }
 
     /**  
