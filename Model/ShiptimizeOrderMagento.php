@@ -509,7 +509,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
             "update %s
             set shiptimize_status =  %d, 
             shiptimize_carrier_id=%d,
-            shiptimize_pickup_id =%d,
+            shiptimize_pickup_id =\"%s\",
             shiptimize_pickup_label = \"%s\",
             shiptimize_pickup_extended = \"%s\",
             shiptimize_tracking_id=\"%s\",

@@ -44,7 +44,8 @@ class OrderPlacedObserver implements \Magento\Framework\Event\ObserverInterface
         
         if($this->_checkoutSession->getShiptimizePickupId() ){
             try{
-                $this->shiptimize_order->updateOrderMeta(0, '', $this->_checkoutSession->getShiptimizePickupId(), $this->_checkoutSession->getShiptimizePickupLabel(), $this->_checkoutSession->getShiptimizePickupExtendedInfo());   
+                $pointId = $this->_checkoutSession->getShiptimizePickupId();  
+                $this->shiptimize_order->updateOrderMeta(0, '', $pointId, $this->_checkoutSession->getShiptimizePickupLabel(), $this->_checkoutSession->getShiptimizePickupExtendedInfo());   
             } catch(Exception $e){
                 error_log( "Exception updating order meta ". $e->getMessage() ); 
             }

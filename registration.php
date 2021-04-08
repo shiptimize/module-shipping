@@ -5,7 +5,7 @@ if(isset($file)){
     //Support for links breaks on mage 2.3 only supported for mage 2.4 
     $installdir = dirname($file);
     $installdir = substr($installdir, 0, stripos($installdir, 'app')); 
-    $isdevmachine =  file_exists($installdir . 'isdevmachine'); 
+    $isdevmachine =  file_exists($installdir . 'isdevmachine');  
 }
 
 \Magento\Framework\Component\ComponentRegistrar::register(

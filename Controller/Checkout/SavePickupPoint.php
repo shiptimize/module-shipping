@@ -30,7 +30,8 @@ class SavePickupPoint extends \Magento\Framework\App\Action\Action
     {
         /** @var \Magento\Framework\Controller\Result\Json $resultJson */
         $resultJson = $this->resultJsonFactory->create();
-      
+        //error_log( "Saving point id " . $this->request->getParam("PointId")); 
+
         $this->_checkoutSession->setShiptimizePickupId($this->request->getParam("PointId"));
         $this->_checkoutSession->setShiptimizePickupLabel($this->request->getParam("Label"));
         $this->_checkoutSession->setShiptimizePickupExtendedInfo($this->request->getParam("Extendedinfo"));
