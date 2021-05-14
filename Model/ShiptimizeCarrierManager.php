@@ -19,11 +19,14 @@ class ShiptimizeCarrierManager
     public function __construct(
         \Magento\Framework\Module\Dir\Reader $moduleReader,
         \Magento\Framework\Message\ManagerInterface $messageManager,
-        \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList
+        \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList,
+        \Magento\Shipping\Model\Config $shippingConfig,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
     ) {
         $this->moduleReader = $moduleReader;
         $this->messageManager = $messageManager;
-
+        $this->shippingConfig = $shippingConfig;
+        $this->scopeConfig = $scopeConfig; 
         $this->cacheTypeList = $cacheTypeList;
     }
 
@@ -330,6 +333,23 @@ class  {$className} extends \Shiptimize\Shipping\Model\Carrier\ShiptimizeShippin
         }
 
         return $classes;
+    }
+
+    public function getShippingMethods()
+    {
+        $magecarriers = $this->shippingConfig->getAllCarriers();
+        $shippingmethods = array(); 
+        foreach ($magecarriers as $carrierCode => $carrierModel) {
+            $carrierTitle = $this->scopeConfig->getValue(
+                'carriers/' . $carrierCode . '/title',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            );
+            
+            if ($carrierTitle) {
+                array_push($shippingmethods, array('id' => $carrierCode, 'title' => $carrierTitle));
+            }
+        }
+        return $shippingmethods;
     }
 
     /**

@@ -103,19 +103,25 @@ class ShiptimizeMagento extends ShiptimizeV3
             $this->log("API_UPDATE INVALID SIGNATURE IGNORING ");
             return ['Error' => "Invalid Signature"];
         }
+
+        if(isset($data->Action) && $data->Action == 'getshippingmethods') {
+          return $this->carrierManager->getshippingmethods(); 
+        }
          
-       $order =  $this->orderFactory->create();
-       $order->bootstrap($data->ShopItemId);
+       if (isset($data->ShopItemId)) {
+         $order =  $this->orderFactory->create();
+         $order->bootstrap($data->ShopItemId);
 
-        if ($data->Status) {
-            $order->setStatusFromTheApi($data->Status);
-        }
+          if ($data->Status) {
+              $order->setStatusFromTheApi($data->Status);
+          }
 
-        if ($data->TrackingId) {
-            $order->setTrackingId($data->TrackingId);
+          if ($data->TrackingId) {
+              $order->setTrackingId($data->TrackingId);
+          }
+        
+          return (object)["Tekst" => "Success"];
         }
-      
-        return (object)["Tekst" => "Success"];
     }
 
     /**

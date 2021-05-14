@@ -198,6 +198,11 @@ abstract class ShiptimizeOrder
     protected $ExtendedInfo = [];
 
     /**
+     * @param string ShippingMethodId - the shipping method id to be used in rules over the API
+     */
+    protected $ShippingMethodId = '';
+
+    /**
      * @var string[] errors
      */
     protected $errors = [];
@@ -502,6 +507,10 @@ abstract class ShiptimizeOrder
            ],
 
         ];
+
+        if ($this->ShippingMethodId) {
+            $data['ShippingMethodId'] = $this->ShippingMethodId;
+        }
 
         if ($this->Transporter) {
             $data['Carrier'] = [

@@ -55,7 +55,7 @@ class ShiptimizeApiV3
     /**
      * The local dev url
      */
-    protected $api_url_dev = 'http://api.local:8080/v3';
+    protected $api_url_dev = 'https://api.lan/v3';
 
     /**
      * @var String
@@ -332,6 +332,8 @@ class ShiptimizeApiV3
             CURLOPT_USERPWD => $username . ":" . $password,
             CURLOPT_RETURNTRANSFER => true,
             CURLINFO_HEADER_OUT => true,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_SSL_VERIFYPEER => false
         ];
         
         curl_setopt_array($ch, $options);

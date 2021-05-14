@@ -172,6 +172,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
     public function extractCarrier()
     {
         $shippingMethod = $this->magentoOrder->getShippingMethod();
+        $parts = explode('_',$shippingMethod); 
         
         $meta = $this->getOrderMeta();
  
@@ -192,7 +193,6 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         }
         else if (stripos($shippingMethod, 'shiptimize') !== false) {
             $shiptimizeCarriers = json_decode( $this->scopeConfig->getValue('shipping/shiptimizeshipping/carriers')); 
-            $parts = explode('_',$shippingMethod); 
 
             foreach ($shiptimizeCarriers as $carrier)
             {
@@ -203,6 +203,8 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                 }
             }
         }
+
+        $this->ShippingMethodId = $parts[0];
 
       //echo $shippingMethod; die(var_export($this->getApiProps()));
     }
