@@ -214,11 +214,11 @@ class TableRatesModel
             "Cost",
             "Display Name");
 
-        $content = "\"" . join("\",\"",$columnNames) . "\"\n";
+        $content = "\"" . join("\";\"",$columnNames) . "\"\n";
 
 
         foreach ($rates as $rate ) {
-            $content .= "\"".join('","',array(
+            $content .= "\"".join(';"',array(
                 $rate['dest_country_id'],
                 $rate['dest_region_id'],
                 $rate['dest_zip'],

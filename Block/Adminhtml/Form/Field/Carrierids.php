@@ -45,15 +45,25 @@ class Carrierids extends \Magento\Config\Block\System\Config\Form\Field
         foreach ($this->carriers as $carrier) {
             $optionsbody = '';
             if (isset($carrier->OptionList)) {
+
                 foreach ($carrier->OptionList as $option) {
+                    if($option->Type == 1) {
+                        if(isset($option->OptionValues)) { 
+                            $optionsbody.= '<tr><td><b>' . $option->Name . ' ></b></td><td>';  
+                            foreach ( $option->OptionValues as $optionValue) {
+                               $optionsbody.='<br/>' . $optionValue->Name; 
+                            }
+                            $optionsbody .='</td></tr>';
+                        }
+                    }
                     /* 
                         65 - avondlevering - postnl 
                         42 - "Evening delivery" - DHL (2C)
                     */  
                     if ($option->Id == 65 || $option->Id == 42) {
                         $optionsbody.= "<tr>
-                        <td>AvondLevering </td>  
-                        <td> </td>
+                        <td></td>
+                        <td>AvondLevering </td>   
                         </tr>";
                     }
                 }

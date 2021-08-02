@@ -235,27 +235,63 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         $rates = $this->sqlSelect(sprintf("select * from %s where id=%d", $tableName, intval($rateId)));
         
         if (count($rates)) {
-            $option = trim(strtolower($rates[0]['carrier_options']));
-            
-            if ($option) {
-                switch ($option) {
-                    case 'avondlevering':
-                        $this->OptionList = array(
-                            (object)array(
-                                'Id' => $this->getAvondLeveringId($rates[0]['carrier_id']),
-                                'OptionFields' => array(
-                                    array('Id' => 1)
+            $options = explode(',',trim(strtolower($rates[0]['carrier_options'])));
+            $carriers = json_decode(
+                $this->scopeConfig->getValue(
+                    'shipping/shiptimizeshipping/carriers',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                )
+            );
+            $carrierId = $rates[0]['carrier_id'];
+            $this->OptionList = array(); 
+            foreach ($options as $option) { 
+                    switch ($option) {
+                        case 'avondlevering':
+                            $this->OptionList = array(
+                                (object)array(
+                                    'Id' => $this->getAvondLeveringId($carrierId),
+                                    'OptionFields' => array(
+                                        array('Id' => 1)
+                                    )
                                 )
-                            )
-                        );
+                            );
+                            break;
+                        case 'servicepoint':
+                            break; //not relevant header(string)re set by the api if pointId is set
+                        default:
+                            $foundoption = 0; 
+                            //is it a service level ? 
+                            foreach ($carriers as $carrier) {
+                                if($carrier->Id == $carrierId) { 
+                                    $optionsbody = '';
+                                    if (isset($carrier->OptionList)) {
+                                        foreach ($carrier->OptionList as $carrieroption) {
+                                             
+                                            if (isset($carrieroption->OptionValues)) {
+                                                foreach ( $carrieroption->OptionValues as $optionValue) {
+                                                    if($option == strtolower($optionValue->Name)) {
+                                                        $foundoption = 1;              
+                                                        
+                                                        array_push($this->OptionList, (object)array(
+                                                            'Id' => $carrieroption->Id, 
+                                                            'Value' => $optionValue->Id
+                                                        ));  
+
+                                                        $this->addMessage($this->getFormatedMessage("Added option $optionValue->Name"));   
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (!$foundoption) {  
+                                $this->addMessage($this->getFormatedMessage("unknown option $option ignoring "));
+                            }
                         break;
-                    case 'servicepoint':
-                        break; //not relevant header(string)re set by the api if pointId is set
-                    default:
-                        $this->addMessage($this->getFormatedMessage("unknown option $option ignoring "));
-                        break;
-                }
-            }
+                    } 
+            }    
         }
         else {
             $this->addMessage( $this->getFormatedMessage("The rate id ". $rateId . " no longuer exists, did you upload new rules? ignoring options ") );
