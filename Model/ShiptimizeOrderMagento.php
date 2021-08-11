@@ -311,6 +311,22 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         }
     }
 
+    public function getShippingMethodTitle()
+    {
+        if ($this->Transporter > 0) { 
+            $shiptimizeCarriers = json_decode( $this->scopeConfig->getValue('shipping/shiptimizeshipping/carriers')); 
+
+            foreach ($shiptimizeCarriers as $carrier)
+            {
+                if( $carrier->Id == $this->Transporter) {
+                    return $carrier->Name; 
+                }
+            }
+        } 
+
+        return $this->magentoOrder->getShippingDescription(); 
+    }
+
     /**
      * The list of items contains the variation and the parent product, ignore the parent 
      */
@@ -461,24 +477,47 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
      * we should append a message saying the tracking id was pushed from the api
      * this should also be appended to the order details so the client can check it
      */
-    public function setTrackingId($tracking_id)
+    public function setTrackingId($tracking_id, $carrier_name)
     {
-        if(! $this->magentoOrder->canShip() ){
-            error_log( "Can't create shipment for this order "); 
-            $this->addMessage("Can't add trackingId received from the api: $tracking_id ");
-            return;
+        $shipments = $this->magentoOrder->getShipmentsCollection()->getItems(); 
+        
+        $trackingdata = array(
+                'carrier_code' => 'custom',
+                'title'  =>  $carrier_name ? $carrier_name : $this->getShippingMethodTitle(),
+                'number' => $tracking_id
+        );
+
+        if (empty($shipments)) { 
+            $this->shipOrder($trackingdata); 
+        }
+        else { 
+            $shipment = ''; 
+
+            # yes, magento could pull off the amazing thing 
+            # of returning a non empty array with undefined items in it   
+            # reproduce by manually deleting the tracking info in the order details 
+            # doing it the safe way
+            foreach($shipments as $s) { 
+                if( get_class($s) == 'Magento\Sales\Model\Order\Shipment') 
+                {
+                    $shipment = $s; 
+                } 
+            }
+            
+            # Could we get a valid shipment? 
+            if ($shipment) { 
+                $orderShipment = $this->convertOrder->toShipment($this->magentoOrder);
+                $track = $this->trackFactory->create()->addData($trackingdata);
+                $shipment->addTrack($track)->save();
+
+                $this->shipmentNotifier->notify($orderShipment);
+            }
+            else {
+                error_log("Could not find a valid shipment in the list of shipments returned by magento, adding a new one "); 
+                $this->shipOrder($trackingdata); 
+            }
         }
 
-        $shipments = $this->magentoOrder->getShipmentsCollection()->getItems(); 
-        $shipment = empty($shipments) ?  $this->shipOrder() : $shipments[0];
-
-        $track = $this->trackFactory->create()->addData(array(
-            'carrier_code' => 'custom',
-            'title'  => '',
-            'number' => $tracking_id
-        ));
-
-        $shipment->addTrack($track)->save();
         $this->addMessage("<br/>TrackingId received from the api: $tracking_id ");
     }
 
@@ -486,8 +525,14 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
      * Create a shipment for this order
      * Return the created shipment
      */ 
-    private function shipOrder()
+    private function shipOrder($trackingdata)
     {
+        if(! $this->magentoOrder->canShip() ){
+            error_log( "Can't create shipment for this order "); 
+            $this->addMessage("Can't add trackingId received from the api: $tracking_id ");
+            return;
+        }
+
         $orderShipment = $this->convertOrder->toShipment($this->magentoOrder);
 
         foreach ($this->magentoOrder->getAllItems() AS $orderItem) {
@@ -509,11 +554,18 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
             // Save created Order Shipment
             $orderShipment->save();
             $orderShipment->getOrder()->save();
+            $orderShipment->save();
+
+
+            $track = $this->trackFactory->create()->addData($trackingdata);
+
+            $orderShipment->addTrack($track)->save();
 
             // Send Shipment Email
             $this->shipmentNotifier->notify($orderShipment);
-            $orderShipment->save();
+
         } catch (\Exception $e) {
+            $this->addMessage('<br/>' . $e->getMessage());
             throw new \Magento\Framework\Exception\LocalizedException(
             __($e->getMessage())
             );
