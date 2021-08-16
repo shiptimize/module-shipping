@@ -306,7 +306,13 @@ class ShiptimizeMagento extends ShiptimizeV3
             'Expire' => ''
         ]);
 
-        $token = $api->getToken($this->getCallbackURL(), $platform_version, $this->db_resource->getDbVersion('Shiptimize_Shipping'));
+        $callbackurl =  $this->scopeConfig->getValue('shipping/shiptimizeshipping/apiurl', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+        if(!$callbackurl){
+            $callbackurl = $this->getCallbackURL();  
+        }
+
+        $token = $api->getToken($callbackurl, $platform_version, $this->db_resource->getDbVersion('Shiptimize_Shipping'));
 
         if (isset($token->Key)) {
             $this->saveToken($token);
@@ -325,6 +331,7 @@ class ShiptimizeMagento extends ShiptimizeV3
         $matches = array(); 
         preg_match("/([\d]{1}\.[\d]{1})/", $platform_version, $matches);
         $controller = !empty($matches) && $matches[1] == '2.2' ? '22' : ''; 
+
         return $this->storeManager->getStore()->getBaseUrl().'shiptimize/api/update'.$controller;
     }
     
@@ -361,9 +368,18 @@ class ShiptimizeMagento extends ShiptimizeV3
         return $html;
     }
 
-
+    /** 
+     * Make sure we use the same callback url regardless of selected store 
+     */ 
     protected function saveToken($token)
     {
+
+        $callbackurl =  $this->scopeConfig->getValue('shipping/shiptimizeshipping/apiurl', \Magento\Store\Model\ScopeInterface::SCOPE_STORE); 
+        
+        if(!$callbackurl){
+            $this->configWriter->save('shipping/shiptimizeshipping/apiurl', $this->getCallbackURL());
+        }
+
         $this->configWriter->save('shipping/shiptimizeshipping/token', $token->Key);
         $this->configWriter->save('shipping/shiptimizeshipping/token_expires', $token->Expire);
     }
