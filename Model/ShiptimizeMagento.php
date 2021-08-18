@@ -310,8 +310,8 @@ class ShiptimizeMagento extends ShiptimizeV3
 
         if(!$callbackurl){
             $callbackurl = $this->getCallbackURL();  
-        }
-
+        } 
+        
         $token = $api->getToken($callbackurl, $platform_version, $this->db_resource->getDbVersion('Shiptimize_Shipping'));
 
         if (isset($token->Key)) {

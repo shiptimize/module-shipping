@@ -34,8 +34,6 @@ class Export extends \Magento\Framework\App\Action\Action
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
         header('Content-Length: '.filesize($file));
-        ob_clean();
-        flush();
         readfile($file);
     }
 }
