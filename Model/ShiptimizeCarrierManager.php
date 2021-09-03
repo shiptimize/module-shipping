@@ -135,8 +135,8 @@ class ShiptimizeCarrierManager
         $node->addAttribute("id", 'ShiptimizeTableRates');
         $node->addAttribute("sortOrder","10");
         $node->addAttribute("showInDefault", "1");
-        $node->addAttribute("showInWebsite", "1");
-        $node->addAttribute("showInStore", "1");
+        $node->addAttribute("showInWebsite", "0");
+        $node->addAttribute("showInStore", "0");
         
 
         $node->addChild("label", 'Shiptimize Table Rates');

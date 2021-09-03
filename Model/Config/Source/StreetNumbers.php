@@ -12,6 +12,7 @@ class StreetNumbers implements \Magento\Framework\Option\ArrayInterface
     public function toOptionArray($isMultiselect = false)
     { 
        return [
+            ['value' => '-1', 'label' => "-"],
             /*['value' => '0', 'label' => "1"],
             ['value' => '1', 'label' => "2"],*/
             ['value' => '2', 'label' => "3"],

@@ -145,8 +145,6 @@ abstract class ShiptimizeV3
             } catch(Exception $e) {
                 error_log("ERROR!!  Invalid json in ".__DIR__.'/lang/'.$this->lang.'.json');
             }
-
-            error_log('LANG VALUES: '.     var_export($this->langs[$this->lang], true) . ' ' .  json_last_error());
         }
 
         return isset($this->langs[$this->lang]->$string) ? $this->langs[$this->lang]->$string  : $string;

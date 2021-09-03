@@ -61,12 +61,7 @@ class ShiptimizeApiV3
      * @var String
      * @since 1.0.0
      */
-    protected $version = '3.0.0';
-
-    /**
-     * @var bool - dump requests and other debug info
-     */
-    protected $debug = false;
+    protected $version = '3.0.0'; 
 
 
     private function __construct($public_key, $private_key, $app_id, $token = '', $token_expires = '', $is_dev=false)
@@ -384,19 +379,11 @@ class ShiptimizeApiV3
         $confirm_hash = $this->getRequestSignature($string);
         $confirm_hash_without_padding = $this->removeBase64Padding($confirm_hash);
 
-        $this->log("Confirm Hash ".$confirm_hash_without_padding.' against received hash '.$hash);
-
+        if($this->is_dev){
+            error_log("\nHashSTR $string\nPrivatekey $this->private_key \nConfirm Hash $confirm_hash_without_padding against received hash  $hash \n.");
+        }
+        
         return $hash == $confirm_hash_without_padding;
     }
 
-    /**
-     * 
-     */
-    public function log($message, $force=false){
-        if(!$this->debug  && !$force){
-            return;
-        }
-
-        error_log($message);
-    }
 }

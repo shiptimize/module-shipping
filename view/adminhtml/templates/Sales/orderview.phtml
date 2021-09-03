@@ -1,0 +1,16 @@
+<?php  
+$shiptimize_meta = $block->getShiptimizeMeta(); 
+?>
+<section class="admin__page-section shiptimize-extra-info">
+    <?php if($shiptimize_meta['shiptimize_pickup_label']) { ?> 
+        <div class="admin__page-section-title">
+            <span class="title">Shiptimize</span>
+        </div>
+        <div class="admin__field">
+            <label for="history_status" class="admin__field-label"><?php echo $block->getPointTitle() ?></label>
+            <div class="admin__field-control"> 
+                <?php echo $shiptimize_meta['shiptimize_pickup_label']; ?>
+            </div>
+        </div>
+    <?php } ?>
+</section> 
