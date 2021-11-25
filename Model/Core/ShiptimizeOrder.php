@@ -335,20 +335,19 @@ abstract class ShiptimizeOrder
 
 //      Sometimes people will input - To mean Idfk why are you asking me to input this?
         if ($this->Phone && strlen($this->Phone) < 3) {
-            $this->addMessage($this->get_formated_message("Invalid Phone [$this->Phone] ignoring"));
+            $this->addMessage($this->getFormatedMessage("Invalid Phone [$this->Phone] ignoring"));
             $this->Phone = '';
         }
 
         if ($this->State && strlen($this->State) < 2) {
-            $this->addMessage($this->get_formated_message("Invalid State [$this->State] ignoring"));
+            $this->addMessage($this->getFormatedMessage("Invalid State [$this->State] ignoring"));
             $this->State = '';
         }
 
         if ($this->CompanyName && strlen($this->CompanyName) < 3) {
-            $this->addMessage($this->get_formated_message("Invalid CompanyName[$this->CompanyName] ignoring "));
+            $this->addMessage($this->getFormatedMessage("Invalid CompanyName[$this->CompanyName] ignoring "));
             $this->CompanyName = '';
         }
-
 
         $this->Description = $this->escapeTextData($this->Description);
         if (strlen($this->Description) > 255) {
