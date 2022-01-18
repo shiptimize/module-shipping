@@ -361,6 +361,11 @@ abstract class ShiptimizeOrder
                 }
             }
         }
+
+        if(strlen($this->Description) < 3) {
+            $this->addMessage($this->getFormatedMessage("Invalid description $this->Description ignoring "));
+            $this->Description = ''; 
+        }
     }
 
     /**

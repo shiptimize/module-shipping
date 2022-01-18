@@ -360,7 +360,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
                 $this->Weight += $weight;
                 $this->Value += $value;
-                $this->Description .= $qty.' - '.$this->escapeTextData($data['name']) .'; ';
+                $this->Description .= $qty . ' - ' . $this->escapeTextData($data['name']) . '; ';
             }
         }
 
