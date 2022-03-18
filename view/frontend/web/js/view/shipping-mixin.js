@@ -13,7 +13,7 @@ define([], function () {
         console.log('validateShippingInformation', shiptimize_label_select_pickup);
         const id = shiptimize.platform.getSelectedShipppingMethod();
         const isTableRatesWithPickup = id.indexOf("ShiptimizeTableRates") >= 0 && id.indexOf("pickup") >= 0;
-        const hasPickupPoint = shiptimize.platform.pickupPoint && shiptimize.platform.pickupPoint.PointId > 0;
+        const hasPickupPoint = shiptimize.platform.pickupPoint && shiptimize.platform.pickupPoint.PointId;
 
         if (isTableRatesWithPickup && !hasPickupPoint) {
           this.errorValidationMessage(shiptimize_label_select_pickup);

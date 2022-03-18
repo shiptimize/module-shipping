@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="shiptimize" resource="default" engine="innodb" comment="Shiptimize_Shipping">
+        <column xsi:type="int" name="shiptimize_order_id" unsigned="true" nullable="false" identity="true" comment="The order id"/>
+        <column xsi:type="int" name="shiptimize_status" unsigned="true" nullable="true"  comment="The order status"/>
+        <column xsi:type="varchar" length="90" name="shiptimize_tracking_id" nullable="true"  comment="TrackingId"/>
+        <column xsi:type="int" name="shiptimize_carrier_id" unsigned="true" nullable="true"  comment="The assigned carrier id"/>
+        <column xsi:type="varchar" length="100" name="shiptimize_pickup_id" nullable="true"  comment="pickup point id"/>
+        <column xsi:type="varchar" length="255" name="shiptimize_pickup_label" nullable="true"  comment="pickup point label"/>
+        <column xsi:type="varchar" length="255" name="shiptimize_pickup_extended" nullable="true"  comment="pickup point extended information"/>
+        <column xsi:type="text" name="shiptimize_message" nullable="true"  comment="pickup point extended information"/>    
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="shiptimize_order_id"/>
+        </constraint>
+    </table>
+    <table name="shiptimize_customtablerates" resource="default" engine="innodb" comment="Shiptimize_Shipping">
+        <column xsi:type="int" name="id" unsigned="true" nullable="false" identity="true" comment="rate id"/>
+        <column xsi:type="varchar" length="4" name="dest_country_id" nullable="true"  comment="destination id"/>
+        <column xsi:type="varchar" length="90" name="dest_region_id" nullable="true"  comment="region id"/>
+        <column xsi:type="varchar" length="10" name="dest_zip" nullable="true"  comment="destination zip"/>
+        <column xsi:type="decimal" scale="4" name="min_price" nullable="true"  comment="price from"/>
+        <column xsi:type="decimal" scale="4" name="min_weight" nullable="true"  comment="weight from"/>
+        <column xsi:type="int" name="min_items" unsigned="true" nullable="true"  comment="weight from"/>
+        <column xsi:type="int" name="carrier_id" unsigned="true" nullable="true"  comment="the carrierid "/>
+        <column xsi:type="varchar" length="255" name="carrier_options" nullable="true"  comment="the carrier options"/>
+        <column xsi:type="decimal" scale="4" name="price" nullable="true"  comment="price to charge the client"/>
+        <column xsi:type="varchar" length="255" name="display_name" nullable="true"  comment="name to display at checkout"/>
+        <column xsi:type="smallint" name="has_pickup" unsigned="true" nullable="false" comment="should we show points"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+    </table>
+</schema>
