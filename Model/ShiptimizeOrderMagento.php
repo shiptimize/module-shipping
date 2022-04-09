@@ -251,7 +251,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                                 (object)array(
                                     'Id' => $this->getAvondLeveringId($carrierId),
                                     'OptionFields' => array(
-                                        array('Id' => 1)
+                                        array('Id' => 1, 'Value' => 1)
                                     )
                                 )
                             );
