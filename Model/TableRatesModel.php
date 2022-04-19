@@ -100,59 +100,80 @@ class TableRatesModel
                     }
                 }
 
-                // Try to find a region that matches 
-                if ($rate->dest_region_id && !is_numeric($rate->dest_region_id)) {
-                    $rate->dest_region_id = $this->get_region_from_name($rate->dest_country_id,$rate->dest_region_id);
-                    if (!$rate->dest_region_id) {
-                        $this->messageManager->adderror("Skiping rule $ratedesc please fix errors and re-upload");
-                        continue;
-                    }
+                // Are there multiple regions in this rule ? 
+                if(stripos($rate->dest_region_id, ',') !== false) {
+                    $regions = explode(',', $rate->dest_region_id); 
+                    foreach($regions as $region) {
+                        $rate->dest_region_id = trim($region); 
+                        $this->add_rate($rate); 
+                    } 
                 }
-
-
-                $sql_insert = sprintf(
-                    "insert into `%s`
-                    (`dest_country_id`,
-                    `dest_region_id`,
-                    `dest_zip`,
-                    `min_price`,
-                    `min_weight`,
-                    `min_items`,
-                    `carrier_id`,
-                    `carrier_options`,
-                    `price`,
-                    `display_name`,
-                    `has_pickup`)
-                    VALUES
-                    ('%s',
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%s',
-                    %s)",
-                    $this->tableName,
-                    $rate->dest_country_id,
-                    $rate->dest_region_id,
-                    $rate->dest_zip,
-                    $rate->min_price,
-                    $rate->min_weight,
-                    $rate->min_items,
-                    $rate->carrier_id,
-                    $rate->carrier_options,
-                    $rate->price,
-                    $rate->display_name,
-                    $rate->has_pickup
-                );
-
-                $this->connection->query($sql_insert);
-                $this->messageManager->addWarning($sql_insert);
+                else {
+                    $this->add_rate($rate); 
+                }
             }
         }  
+    }
+
+    private function add_rate($rate) {
+
+        $ratedesc=''; 
+        foreach($rate as $key => $value) {
+            $ratedesc .= "$key=$value, "; 
+        }
+        
+        error_log("\n$ratedesc");
+
+        // Try to find a region that matches 
+        if ($rate->dest_region_id && !is_numeric($rate->dest_region_id)) {
+            $rate->dest_region_id = $this->get_region_from_name($rate->dest_country_id,$rate->dest_region_id);
+            if (!$rate->dest_region_id) {
+                $this->messageManager->adderror("Skiping rule $ratedesc please fix errors and re-upload");
+                return;
+            }
+        }
+
+        $sql_insert = sprintf(
+            "insert into `%s`
+            (`dest_country_id`,
+            `dest_region_id`,
+            `dest_zip`,
+            `min_price`,
+            `min_weight`,
+            `min_items`,
+            `carrier_id`,
+            `carrier_options`,
+            `price`,
+            `display_name`,
+            `has_pickup`)
+            VALUES
+            ('%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            %s)",
+            $this->tableName,
+            $rate->dest_country_id,
+            $rate->dest_region_id,
+            $rate->dest_zip,
+            $rate->min_price,
+            $rate->min_weight,
+            $rate->min_items,
+            $rate->carrier_id,
+            $rate->carrier_options,
+            $rate->price,
+            $rate->display_name,
+            $rate->has_pickup
+        );
+
+        $this->connection->query($sql_insert);
+        $this->messageManager->addWarning($ratedesc);
     }
 
     /** 
@@ -163,11 +184,13 @@ class TableRatesModel
             return $region;
         }
 
+        $region = trim($region);
+
         $regionTable = $this->dbResource->getTableName('directory_country_region');
         $regions = $this->connection->fetchAll('select * from ' . $regionTable . ' where country_id="' . $country . '" and (code="' . $region . '" or default_name="' . $region . '") ');
 
         if(!$regions || count($regions) != 1) {
-            $this->messageManager->addError("Invalid region $region for country $country");
+            $this->messageManager->addError("Invalid region [$region] for country $country");
             return ''; 
         } 
 
@@ -308,7 +331,7 @@ error_log("will write rates to $ratesfile ");
             return $a->min_items - $b->min_items;
         }); 
 
-        //error_log("Country $country $region  $zipcode; weight: $weight;  orderPrice: $orderPrice Found " . count($rates) . " rates");
+        //error_log("Country $country $region  $zipcode; weight: $weight;  orderPrice: $orderPrice Found " . count($rates) . " rates ");
 
         $weight_category = floatval($this->getCategory($rates, 'min_weight', floatval($weight), floatval($weight),floatval($orderPrice), floatval($nitems) )); 
         $price_category = floatval($this->getCategory($rates,'min_price', floatval($orderPrice), floatval($weight),floatval($orderPrice), floatval($nitems) )); 
@@ -376,7 +399,7 @@ error_log("will write rates to $ratesfile ");
             $matches_zipcode = ($rate['dest_zip'] == '*' || $rate['dest_zip'] == $zipcode );
 
              if ($matches_country && $matches_region && $matches_zipcode) {
-                //error_log("MatchingZone:".$rate['dest_country_id']. ' Region:'. $rate['dest_region_id'] . ' zip: '.$rate['dest_zip']);
+                //error_log("\nMatch!! " . $rate['id'] . " Zone: " . $rate['dest_country_id'] . ' Region:'. $rate['dest_region_id'] . ' zip: '.$rate['dest_zip'] . ' min_weight ' . $rate['min_weight'] . ' price ' . $rate['min_price'] . ' items ' . $rate['min_items'] );
                 array_push($matching_rates , (object)$rate);
             }
         }

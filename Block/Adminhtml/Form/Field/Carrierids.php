@@ -94,14 +94,18 @@ class Carrierids extends \Magento\Config\Block\System\Config\Form\Field
      * @return string
      */
     public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element)
-    {
-        try {
-            $this->carriers = json_decode(
-                $this->scopeConfig->getValue(
-                    'shipping/shiptimizeshipping/carriers',
-                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
-                )
-            );
+    { 
+        $carrierjson = $this->scopeConfig->getValue(
+                'shipping/shiptimizeshipping/carriers',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+
+        if (!$carrierjson) {
+            return '';
+        }
+
+        try { 
+            $this->carriers = json_decode($carrierjson);
         } catch (Exception $e) {
             error_log("Error getting carriers ". $e->getMessage());
             return '';

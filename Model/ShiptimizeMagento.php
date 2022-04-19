@@ -263,8 +263,18 @@ class ShiptimizeMagento extends ShiptimizeV3
             $privatekey = $this->scopeConfig->getValue('shipping/shiptimizeshipping/privatekey', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
             $token =  $this->scopeConfig->getValue('shipping/shiptimizeshipping/token', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
             $tokenexpires = $this->scopeConfig->getValue('shipping/shiptimizeshipping/token_expires', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            error_log("Shiptimize Magento is dev " . $this->is_dev);
-            $this->api = ShiptimizeApiV3::instance(trim($publickey), trim($privatekey), ShiptimizeConstants::$SHIPTIMIZE_MAGENTO, trim($token), $tokenexpires, $this->is_dev);
+            
+            if ($this->is_dev) { 
+                error_log("Shiptimize Magento is dev " . $this->is_dev);
+            }
+
+            // PHP 8 will fail on null here 
+            if(!$publickey || !$privatekey){
+                $publickey = ''; 
+                $privatekey =''; 
+            }
+
+            $this->api = ShiptimizeApiV3::instance(trim($publickey), trim($privatekey), ShiptimizeConstants::$SHIPTIMIZE_MAGENTO, trim($token), $tokenexpires, $this->is_dev);  
         }
 
         return  $this->api;
@@ -298,7 +308,12 @@ class ShiptimizeMagento extends ShiptimizeV3
     public function refreshToken()
     {
         $api = $this->getApi();
- 
+        
+        if (!$api) {
+            error_log("Could not get an API instance, probably no keys are configured yet");
+            return;
+        }
+
         $platform_version = $this->productMeta->getVersion();
         
         $this->saveToken((object)[

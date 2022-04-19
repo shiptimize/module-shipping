@@ -31,7 +31,7 @@ class Recurring implements InstallSchemaInterface {
         $ptregions = $connection->fetchAll('select * from ' . $regionTable . ' where country_id="PT"'); 
         
         if (empty($ptregions)) {
-            error_log("No regions where found for PT, declaring base regions");
+            //error_log("No regions where found for PT, declaring base regions");
             $connection->query("insert into " . $regionTable . '(country_id, code, default_name) VALUES ("PT","PTM","Madeira")');
             $connection->query("insert into " . $regionTable . '(country_id, code, default_name) VALUES ("PT","PTS","S. Miguel")');
             $connection->query("insert into " . $regionTable . '(country_id, code, default_name) VALUES ("PT","PTI","Outras Ilhas")');
