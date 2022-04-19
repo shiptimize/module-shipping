@@ -304,7 +304,7 @@ class ShiptimizeApiV3
      * @return mixed - object {response, error}
      * @override
      */
-    protected function sendToApi($method = 'GET', $endpoint, $data = '', $headers = [])
+    protected function sendToApi($method = 'GET', $endpoint = '/', $data = '', $headers = [])
     {
         $result = new \stdClass(); 
 

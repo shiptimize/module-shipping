@@ -19,8 +19,8 @@ class RegionList extends \Magento\Config\Block\System\Config\Form\Field
       */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
-        array $data = [],
-        \Magento\Directory\Model\Country $country
+        \Magento\Directory\Model\Country $country,
+        array $data = []
     ) {
         parent::__construct($context, $data);
         $this->country = $country;
