@@ -37,7 +37,10 @@
                     <comment>Which of the street parts is the house number extension </comment> 
                     <source_model>Shiptimize\Shipping\Model\Config\Source\StreetNumbers</source_model> 
                 </field>
-
+                <field id="regionlist" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Carrier Ids</label> 
+                    <frontend_model>Shiptimize\Shipping\Block\Adminhtml\Form\Field\RegionList</frontend_model> 
+                </field>
                 <field id="carrierids" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Carrier Ids</label> 
                     <frontend_model>Shiptimize\Shipping\Block\Adminhtml\Form\Field\Carrierids</frontend_model> 
@@ -45,6 +48,6 @@
             </group>
         </section>
         <section id="carriers" translate="label" type="text" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
-        </section>
+        <group translate="label" id="ShiptimizeTableRates" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0"><label>Shiptimize Table Rates</label><field translate="label" id="active" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" type="select"><label>Enabled</label><source_model>Magento\Config\Model\Config\Source\Yesno</source_model></field><field translate="label" id="title" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1" type="text"><label>Title</label></field><field translate="label" id="export" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0"><label>Export</label><frontend_model>\Shiptimize\Shipping\Block\Adminhtml\Form\Field\Export</frontend_model></field><field translate="label" id="import" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0" type="Shiptimize\Shipping\Block\Adminhtml\Form\Field\Import"><label>Import</label><backend_model>\Shiptimize\Shipping\Model\Config\Backend\CustomTableRates</backend_model></field></group></section>
     </system>
 </config>

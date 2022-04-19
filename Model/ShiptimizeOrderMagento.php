@@ -245,6 +245,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
             $carrierId = $rates[0]['carrier_id'];
             $this->OptionList = array(); 
             foreach ($options as $option) { 
+                    $option = trim($option);
                     switch ($option) {
                         case 'avondlevering':
                             $this->OptionList = array(

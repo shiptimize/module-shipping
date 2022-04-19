@@ -100,6 +100,16 @@ class TableRatesModel
                     }
                 }
 
+                // Try to find a region that matches 
+                if ($rate->dest_region_id && !is_numeric($rate->dest_region_id)) {
+                    $rate->dest_region_id = $this->get_region_from_name($rate->dest_country_id,$rate->dest_region_id);
+                    if (!$rate->dest_region_id) {
+                        $this->messageManager->adderror("Skiping rule $ratedesc please fix errors and re-upload");
+                        continue;
+                    }
+                }
+
+
                 $sql_insert = sprintf(
                     "insert into `%s`
                     (`dest_country_id`,
@@ -143,6 +153,25 @@ class TableRatesModel
                 $this->messageManager->addWarning($sql_insert);
             }
         }  
+    }
+
+    /** 
+     * Try to find the region id from their alfanumeric representation 
+     */
+    private function get_region_from_name ($country, $region) {
+        if($region == '*') {
+            return $region;
+        }
+
+        $regionTable = $this->dbResource->getTableName('directory_country_region');
+        $regions = $this->connection->fetchAll('select * from ' . $regionTable . ' where country_id="' . $country . '" and (code="' . $region . '" or default_name="' . $region . '") ');
+
+        if(!$regions || count($regions) != 1) {
+            $this->messageManager->addError("Invalid region $region for country $country");
+            return ''; 
+        } 
+
+        return $regions[0]['code'];  
     }
 
     /**
@@ -197,7 +226,8 @@ class TableRatesModel
     public function exportRates()
     {
         $ratesfile = $this->componentRegistrar->getPath(ComponentRegistrar::MODULE, 'Shiptimize_Shipping').'/shiptimizetablerates.csv';
-        error_log("will write rates to $ratesfile "); 
+
+error_log("will write rates to $ratesfile "); 
 
         $sql = sprintf("select * from %s ", $this->tableName);
         $rates = $this->connection->fetchAll($sql);
@@ -266,7 +296,6 @@ class TableRatesModel
         }
 
         $rates = $this->getRatesForRegion($country, $region, $zipcode);
-
         uasort($rates, function($a,$b) {
             if($a->min_weight != $b->min_weight){
                 return $a->min_weight - $b->min_weight;
@@ -279,24 +308,27 @@ class TableRatesModel
             return $a->min_items - $b->min_items;
         }); 
 
-        //error_log("location $country, $region, $zipcode; weight: $weight;  orderPrice: $orderPrice");
+        //error_log("Country $country $region  $zipcode; weight: $weight;  orderPrice: $orderPrice Found " . count($rates) . " rates");
 
-        $weight_category = $this->getCategory($rates, 'min_weight', floatval($weight), floatval($weight),floatval($orderPrice), floatval($nitems) ); 
-        $price_category = $this->getCategory($rates,'min_price', floatval($orderPrice), floatval($weight),floatval($orderPrice), floatval($nitems) ); 
-        $items_category = $this->getCategory($rates, 'min_items', intval($nitems), floatval($weight),floatval($orderPrice), floatval($nitems) );
+        $weight_category = floatval($this->getCategory($rates, 'min_weight', floatval($weight), floatval($weight),floatval($orderPrice), floatval($nitems) )); 
+        $price_category = floatval($this->getCategory($rates,'min_price', floatval($orderPrice), floatval($weight),floatval($orderPrice), floatval($nitems) )); 
+        $items_category = floatval($this->getCategory($rates, 'min_items', intval($nitems), floatval($weight),floatval($orderPrice), floatval($nitems) ));
 
         //error_log("Categories: weight $weight_category , price_category: $price_category, Items: $items_category ");  
 
         foreach ($rates as $rate) {
            
-            $matches_weight = floatval($weight_category) == floatval($rate->min_weight);
-            $matches_price = floatval($price_category) == floatval($rate->min_price);
-            $matches_items = floatval($items_category) == floatval($rate->min_items);
+            $matches_weight = $weight_category == floatval($rate->min_weight);
+            $matches_price = $price_category == floatval($rate->min_price);
+            $matches_items = $items_category == floatval($rate->min_items);
 
             if ($matches_weight && $matches_price && $matches_items) {
-                error_log( "Match $weight_category >= $rate->min_weight  ; $price_category >= $rate->min_price ; $items_category >= $rate->min_items" );
+                // error_log( "Match $weight_category == " . floatval($rate->min_weight) . "  ; $price_category == " . floatval($rate->min_price) . "; $items_category >= " . floatval($rate->min_items)  );
                 array_push($matching_rates, $rate);
             }
+            // else {
+            //     error_log( "!!! NOT!!! $weight_category == " . floatval($rate->min_weight) . "  ; $price_category == " . floatval($rate->min_price) . "; $items_category == " . floatval($rate->min_items)  );
+            // }
         }
  
         return $matching_rates;
@@ -312,10 +344,19 @@ class TableRatesModel
     public function getCategory ($rates, $name, $value, $weight, $orderPrice, $nitems) {
         $categoryValue = 0;
 
+        // To make a correct accessment we should sort the rates by the category we are evaluating 
+        uasort($rates, function($a,$b) use($name) {
+            return $a->{$name} - $b->{$name};
+        }); 
+
         foreach ($rates as $rate) {
-            if($value >= $rate->{$name} && ($weight >= $rate->min_weight && $orderPrice >= $rate->min_price && $nitems >= $rate->min_items) ){
+            if($value >= $rate->{$name} && ($weight >= $rate->min_weight && $orderPrice >= $rate->min_price && $nitems >= $rate->min_items) ) {
+// error_log(" ===== Category $name $value >= " . $rate->{$name} . " && Weight ($weight >= $rate->min_weight && Price $orderPrice >= $rate->min_price && $nitems >= $rate->min_items");
                 $categoryValue = $rate->{$name};
             }
+//             else {
+// error_log(" !!NOT!! Category $name $value >= " . $rate->{$name} . " && Weight ($weight >= $rate->min_weight && Price $orderPrice >= $rate->min_price && $nitems >= $rate->min_items");
+//             } 
         }
 
         return $categoryValue;

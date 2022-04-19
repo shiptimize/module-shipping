@@ -127,20 +127,22 @@ class Carrierids extends \Magento\Config\Block\System\Config\Form\Field
 
             </div>
             <script>
-                function initCollapsible(){
+                function initCollapsibleCarriers(){
                     var eCarriers = jQuery("#carrierids"); 
 
                     if(typeof(eCarriers.collapsible) == "undefined"){
-                        setTimeout(initCollapsible, 500); 
+                        setTimeout(initCollapsibleCarriers, 500); 
                         return; 
                     }
 
                     eCarriers.collapsible();
                 }   
-                initCollapsible(); 
+                setTimeout( () => {
+                    initCollapsibleCarriers(); 
+                },500);
             </script>';
 
 
-        return $html."</td></tr>";
+        return $html . "</td></tr>";
     }
 }
