@@ -272,6 +272,8 @@ class ShiptimizeMagento extends ShiptimizeV3
             if(!$publickey || !$privatekey){
                 $publickey = ''; 
                 $privatekey =''; 
+                $token = ''; 
+                $tokenexpires = '';
             }
 
             $this->api = ShiptimizeApiV3::instance(trim($publickey), trim($privatekey), ShiptimizeConstants::$SHIPTIMIZE_MAGENTO, trim($token), $tokenexpires, $this->is_dev);  
