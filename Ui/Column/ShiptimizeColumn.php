@@ -80,7 +80,9 @@ class ShiptimizeColumn extends \Magento\Ui\Component\Listing\Columns\Column {
     {
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) { 
-                $item['shiptimize_order_id'] = html_entity_decode(  $this->getStatusIcon($item['shiptimize_status'],$item['shiptimize_message'],$item['shiptimize_pickup_label']) ); 
+                if (isset($item['shiptimize_status'])) {
+                    $item['shiptimize_order_id'] = html_entity_decode(  $this->getStatusIcon($item['shiptimize_status'],$item['shiptimize_message'],$item['shiptimize_pickup_label']) ); 
+                }
             }
         }
 

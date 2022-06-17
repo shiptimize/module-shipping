@@ -176,7 +176,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         
         $meta = $this->getOrderMeta();
  
-        if ($meta['shiptimize_pickup_id']) {
+        if (isset($meta['shiptimize_pickup_id']) && $meta['shiptimize_pickup_id']) {
             $this->PointId = $meta['shiptimize_pickup_id'];
             $this->ExtendedInfo = $meta['shiptimize_pickup_extended'];
         }

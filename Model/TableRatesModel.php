@@ -173,7 +173,7 @@ class TableRatesModel
         );
 
         $this->connection->query($sql_insert);
-        $this->messageManager->addWarning($ratedesc);
+        $this->messageManager->addSuccess(" New Rule: $ratedesc");
     }
 
     /** 
