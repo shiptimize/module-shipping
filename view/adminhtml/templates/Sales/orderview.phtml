@@ -2,7 +2,7 @@
 $shiptimize_meta = $block->getShiptimizeMeta(); 
 ?>
 <section class="admin__page-section shiptimize-extra-info">
-    <?php if($shiptimize_meta['shiptimize_pickup_label']) { ?> 
+    <?php if(isset($shiptimize_meta['shiptimize_pickup_label']) && $shiptimize_meta['shiptimize_pickup_label']) { ?> 
         <div class="admin__page-section-title">
             <span class="title">Shiptimize</span>
         </div>
