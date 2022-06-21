@@ -85,7 +85,7 @@ class ShiptimizeMagento extends ShiptimizeV3
     public function apiUpdate()
     {
         $content = file_get_contents("php://input");
-        $this->log(" API_UPDATE ".var_export($content, true),  true);
+        $this->log(" API_UPDATE " . var_export($content, true),  true);
 
         if (!trim($content)) {
             return ['Error' => "No Content"];
@@ -95,7 +95,7 @@ class ShiptimizeMagento extends ShiptimizeV3
         $url = $this->getCallbackURL();
         $api = $this->getApi();
 
-        if(!isset($data->Status)){
+        if (!isset($data->Status)) {
             return ['Error' => 'Invalid data sent  '.json_encode($data)];
         }
 
@@ -344,12 +344,17 @@ class ShiptimizeMagento extends ShiptimizeV3
      */
     public function getCallbackURL()
     {
+        $callbackurl =  $this->scopeConfig->getValue('shipping/shiptimizeshipping/apiurl', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        if ($callbackurl) {
+            return $callbackurl;
+        }
+        
         $platform_version = $this->productMeta->getVersion();
         $matches = array(); 
         preg_match("/([\d]{1}\.[\d]{1})/", $platform_version, $matches);
         $controller = !empty($matches) && $matches[1] == '2.2' ? '22' : ''; 
 
-        return $this->storeManager->getStore()->getBaseUrl().'shiptimize/api/update'.$controller;
+       return $this->storeManager->getStore()->getBaseUrl() . 'shiptimize/api/update'.$controller;  
     }
     
     /**
