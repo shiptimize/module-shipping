@@ -129,6 +129,11 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         $this->magentoOrder = $this->orderRepository->get($this->ShopItemId);
         $this->ClientReferenceCode = $this->magentoOrder->getIncrementId();  // the name that shows up on the list, is not the same as the numerical Id
 
+        if (!$this->magentoOrder) {
+            error_log("$mage_id does not match an existing order ");
+            return; 
+        }
+
         $this->extractAddress();
         $this->extractCarrier();
         $this->extractItems();
@@ -140,6 +145,11 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         
         if (!$shipping) {
             $shipping = $this->magentoOrder->getBillingAddress();
+        }
+
+        if (!$shipping) {
+            error_log("Order $this->ShopItemId does not countain an address ");
+            return;
         }
 
         // In mage street is an array of arbitrary length set in the config
