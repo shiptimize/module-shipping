@@ -354,7 +354,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                 return '43';
 
             default: 
-                $this->messageManager->addError("No late night delivery option for carrierId $carrierId "); 
+                $this->messageManager->addError("No saturdaynightdelivery for carrierId $carrierId "); 
                 return '';
         }
     }
