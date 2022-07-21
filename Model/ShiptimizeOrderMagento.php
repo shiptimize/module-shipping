@@ -212,11 +212,20 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                     $this->Transporter = $carrier->Id;
                 }
             }
+
+            $this->ShippingMethodName = $this->scopeConfig->getValue(
+                    'carriers/' . $parts[0] . '/title',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ); 
+        }
+        else {
+            $this->ShippingMethodName = $this->scopeConfig->getValue(
+                    'carriers/' . $parts[0] . '/title',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ); 
         }
 
-        $this->ShippingMethodId = $parts[0];
-
-      //echo $shippingMethod; die(var_export($this->getApiProps()));
+        $this->ShippingMethodId = $parts[0]; 
     }
 
     /**
@@ -253,8 +262,12 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                 )
             );
             $carrierId = $rates[0]['carrier_id'];
+            $this->ShippingMethodName = $rates[0]['display_name'];
             $this->OptionList = array(); 
+
             foreach ($options as $option) { 
+                    # error_log("\n\n option $option ");
+
                     $option = trim($option);
                     switch ($option) {
                         case 'avondlevering':
@@ -267,8 +280,23 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                                 )
                             );
                             break;
+
                         case 'servicepoint':
                             break; //not relevant header(string)re set by the api if pointId is set
+
+                        case 'saturdaydelivery': 
+                            $this->OptionList = array(
+                                (object)array(
+                                    'Id' => $this->getSaturdayDelivery($carrierId),
+                                    'OptionFields' => array(
+                                        array('Id' => 1, 'Value' => 1)
+                                    )
+                                )
+                            );
+
+                            $this->addMessage($this->getFormatedMessage("Added option saturdaydelivery"));   
+
+                            break;
                         default:
                             $foundoption = 0; 
                             //is it a service level ? 
@@ -307,6 +335,28 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         else {
             $this->addMessage( $this->getFormatedMessage("The rate id ". $rateId . " no longuer exists, did you upload new rules? ignoring options ") );
         } 
+    }
+
+    public function getSaturdayDelivery($carrierId) {
+
+        switch ($carrierId) {
+            case '1':
+            case '42':
+            case '53':
+            case '56':
+                return '62';
+            
+            case '26':
+            case '28':
+            case '43':
+            case '49':
+            case '51':
+                return '43';
+
+            default: 
+                $this->messageManager->addError("No late night delivery option for carrierId $carrierId "); 
+                return '';
+        }
     }
 
     public function getWeightInGrams($productWeight, $systemUnit )

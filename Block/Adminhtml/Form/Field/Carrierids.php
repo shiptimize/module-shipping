@@ -66,6 +66,13 @@ class Carrierids extends \Magento\Config\Block\System\Config\Form\Field
                         <td>AvondLevering </td>   
                         </tr>";
                     }
+
+                    if ($option->Id == 62 || $option->Id == 43) {
+                        $optionsbody.= "<tr>
+                        <td>SaturdayDelivery</td>
+                        <td></td>   
+                        </tr>";
+                    }
                 }
             }
 

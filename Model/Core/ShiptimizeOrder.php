@@ -202,6 +202,12 @@ abstract class ShiptimizeOrder
      */
     protected $ShippingMethodId = '';
 
+
+    /**
+     * @param string ShippingMethodName - the shipping method id to be used in rules over the API
+     */
+    protected $ShippingMethodName = '';
+
     /**
      * @var string[] errors
      */
@@ -485,7 +491,6 @@ abstract class ShiptimizeOrder
         $data = [
            'ShopItemId'  => $this->ShopItemId,
            'ClientReferenceCode' => ''.$this->ClientReferenceCode,
-          
            "Address" => [
                 "CompanyName" => $this->escapeTextData($this->CompanyName),
                 'Name' => $this->escapeTextData($this->Name),
@@ -514,6 +519,10 @@ abstract class ShiptimizeOrder
 
         if ($this->ShippingMethodId) {
             $data['ShippingMethodId'] = $this->ShippingMethodId;
+        }
+
+        if ($this->ShippingMethodName) {
+            $data['ShippingMethodName'] = $this->ShippingMethodName; 
         }
 
         if ($this->Transporter) {
