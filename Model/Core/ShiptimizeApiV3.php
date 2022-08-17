@@ -307,9 +307,20 @@ class ShiptimizeApiV3
     protected function sendToApi($method = 'GET', $endpoint = '/', $data = '', $headers = [])
     {
         $result = new \stdClass(); 
+ 
 
         // this can be called from crontab or other local scripts
-        $url = ($this->is_dev ? $this->api_url_dev :  ShiptimizeConstants::$API_URL ) . $endpoint;
+        if (stripos($endpoint, "http") !== FALSE) { 
+            $url = $endpoint;
+        }
+        else {
+            $url = ($this->is_dev ? $this->api_url_dev :  ShiptimizeConstants::$API_URL ) . $endpoint;
+        }
+
+        if ($this->is_dev) {
+            error_log('==== > ' . $method . ' ' . $url);
+        }
+
         $json_data = $data ? $this->getUtf8(json_encode($data)) : '';
 
         $username = $this->isTokenValid() ? $this->token : $this->public_key;
@@ -384,6 +395,30 @@ class ShiptimizeApiV3
         }
         
         return $hash == $confirm_hash_without_padding;
+    }
+
+
+    /** 
+     * Request the labels  
+     * @param array $clientreferences -  an array with the clientreferences to include in the label pdf
+     * @param labelstart - where to start 1 is top left 
+     * @param labeltype - 0 is whatever is in the client settings 
+     **/
+    public function postLabelsStep1($clientreferences, $labelstart = 1, $labeltype = 0) {
+        $data = array(
+            'ClientReferenceCodeList' => $clientreferences,
+            'LabelStart' => $labelstart, 
+            'LabelType' => $labeltype
+        ); 
+
+        return $this->sendToApi('POST','/labels', $data); 
+    }
+
+    /** 
+     *  Monitor the label request, is it finished? 
+     */ 
+    public function monitorLabelStatus($callbackurl) {
+        return $this->sendToApi('GET', $callbackurl); 
     }
 
 }

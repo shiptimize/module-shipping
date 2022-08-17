@@ -19,7 +19,6 @@ define([], function () {
           this.errorValidationMessage(shiptimize_label_select_pickup);
           return false;
         }
-
         return this._super();
       }
     });

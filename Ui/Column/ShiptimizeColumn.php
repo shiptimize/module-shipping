@@ -2,6 +2,8 @@
 
 namespace Shiptimize\Shipping\Ui\Column;
 
+use Shiptimize\Shipping\Model\Core\ShiptimizeOrder;
+
 class ShiptimizeColumn extends \Magento\Ui\Component\Listing\Columns\Column {
 
     /**
@@ -31,30 +33,39 @@ class ShiptimizeColumn extends \Magento\Ui\Component\Listing\Columns\Column {
      * @param string message
      * @return string containing the html representation of this order's status
      */
-    private function getStatusIcon($status, $message, $pickupLabel)
+    private function getStatusIcon($status, $message, $pickupLabel, $orderid = '')
     {     
         $class = 'shiptimize-icon shiptimize-tooltip-reference ';
 
         if ($status) {
             if (strlen($message > 100)) {
-                $class .= ' shiptimize-message-large';
+                $class .= ' shiptimize-message-large ';
             }
 
-
             switch ($status) {
-                case 2:
+                case ShiptimizeOrder::$STATUS_EXPORTED_SUCCESSFULLY:
                   $class .= 'shiptimize-icon-success';
-                  $message = $this->shiptimize->__('Exported').' '.$message;
+                  break; 
+                case ShiptimizeOrder::$STATUS_EXPORT_ERRORS:  
+                  $class .= 'shiptimize-icon-error'; 
                   break;
-                case 3:
-                  $class .= 'shiptimize-icon-error';
-                  break;
-                case 4:
+                case ShiptimizeOrder::$STATUS_TEST_SUCCESSFUL: 
                   $class .= 'shiptimize-icon-test-successful';
+                  break; 
+                case ShiptimizeOrder::$LABEL_STATUS_PRINTED: 
+                  $class .= 'shiptimize-icon-print-printed';
+                  break; 
+
+                case ShiptimizeOrder::$LABEL_STATUS_ERROR: 
+                  $class .= 'shiptimize-icon-print-error'; 
+                  break; 
+
+                case ShiptimizeOrder::$LABEL_STATUS_NOT_REQUESTED: 
+                  $class .= 'shiptimize-icon-print-notprinted'; 
                   break;
-                default: //not exported or no status
-                  $class .= 'shiptimize-icon-not-exported';
-                  $message = $this->shiptimize->__('Not Exported');
+
+                default: //Not exported or no status 
+                  $class .= ' shiptimize-icon-not-exported';   
                   break;
             }
         } else {
@@ -66,7 +77,7 @@ class ShiptimizeColumn extends \Magento\Ui\Component\Listing\Columns\Column {
             $message .= '<br/>'.$this->shiptimize->__('Pickup Point').' -  '.$pickupLabel;
         }
 
-        return '<span class="shiptimize-status shiptimize-tooltip-wrapper"><span class="'.$class.'"></span><span class="shiptimize-tooltip-message"><span class="shiptimize-tooltip-message__arrow"></span><span class="shiptimize-tooltip__inner">'.$message.'</span></span></span>';
+        return '<span class="shiptimize-status shiptimize-tooltip-wrapper"><span id="shiptimize-label' . $orderid . '" class="'.$class.'"></span><span class="shiptimize-tooltip-message"><span class="shiptimize-tooltip-message__arrow"></span><span class="shiptimize-tooltip__inner">'.$message.'</span></span></span>';
     } 
 
     /**
@@ -80,8 +91,8 @@ class ShiptimizeColumn extends \Magento\Ui\Component\Listing\Columns\Column {
     {
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) { 
-                if (isset($item['shiptimize_status'])) {
-                    $item['shiptimize_order_id'] = html_entity_decode(  $this->getStatusIcon($item['shiptimize_status'],$item['shiptimize_message'],$item['shiptimize_pickup_label']) ); 
+                if (isset($item['shiptimize_status'])) { 
+                    $item['shiptimize_order_id'] = html_entity_decode(  $this->getStatusIcon($item['shiptimize_status'],$item['shiptimize_message'],$item['shiptimize_pickup_label'],$item['increment_id']) ); 
                 }
             }
         }

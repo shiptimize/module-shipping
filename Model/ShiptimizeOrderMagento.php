@@ -156,7 +156,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         $street = $shipping->getStreet();
         $houseNumberExtensionField = $this->scopeConfig->getValue('shipping/shiptimizeshipping/housenumberextension', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
-        if ($houseNumberExtensionField && isset($street[$houseNumberExtensionField]) && $street[$houseNumberExtensionField] > 0) {
+        if ($houseNumberExtensionField && isset($street[$houseNumberExtensionField]) ) {
             $this->NumberExtension = $street[$houseNumberExtensionField];
         }
  

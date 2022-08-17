@@ -11,8 +11,19 @@
                     <argument name="data" xsi:type="array">
                         <item name="config" xsi:type="array">
                             <item name="type" xsi:type="string">order_mass</item>
-                            <item name="label" xsi:type="string" translate="true">Export to Shiptimize</item>
+                            <item name="label" xsi:type="string" translate="true">Shiptimize</item> 
+                        </item> 
+                    </argument>
+                    <argument name="actions" xsi:type="array">
+                        <item name="0" xsi:type="array">
+                            <item name="type" xsi:type="string">export</item>
+                            <item name="label" xsi:type="string" translate="true">Export</item>
                             <item name="url" xsi:type="url" path="shiptimize/shipping/export"/> 
+                        </item>  
+                        <item name="1" xsi:type="array">
+                            <item name="type" xsi:type="string">print</item>
+                            <item name="label" xsi:type="string" translate="true">Print Label</item>
+                            <item name="url" xsi:type="url" path="shiptimize/shipping/labelcreate"/> 
                         </item>
                     </argument> 
             </action>

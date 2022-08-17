@@ -25,6 +25,11 @@ abstract class ShiptimizeOrder
      * @var int status exported succesfully
      */
     public static $STATUS_EXPORTED_SUCCESSFULLY = 2;
+ 
+    /**
+     * @var int status export error
+     */
+    public static $STATUS_EXPORT_ERRORS = 3;
 
     /**
      * @var int status test successfull
@@ -32,9 +37,19 @@ abstract class ShiptimizeOrder
     public static $STATUS_TEST_SUCCESSFUL = 4;
 
     /**
-     * @var int status export error
+     * @var int label status not requested 
      */
-    public static $STATUS_EXPORT_ERRORS = 3;
+    public static $LABEL_STATUS_NOT_REQUESTED = 5; 
+
+    /**
+     * @var int label status requested 
+     */ 
+    public static $LABEL_STATUS_PRINTED = 6;
+
+    /**
+     * @var int label status requested 
+     */ 
+    public static $LABEL_STATUS_ERROR = 7;
 
     /**
      * @var int $ERROR_ORDER_EXISTS
@@ -45,7 +60,7 @@ abstract class ShiptimizeOrder
      *
      * @var string $ShopItemId - the order id  before filters are applied
      */
-    protected $ShopItemId=null;
+    protected $ShopItemId = null;
 
     /**
      *
@@ -454,7 +469,10 @@ abstract class ShiptimizeOrder
      */
     public function escapeTextData($str)
     {
-        
+        if (!$str) {
+            return; 
+        }
+
         //It's the wild wild web... and people import stuff from everywhere 
         //We've seen these things pop up... 
         $str = preg_replace("/\r|\n|\t|\'|\"/", " ",$str);
@@ -505,7 +523,7 @@ abstract class ShiptimizeOrder
                 'Phone' => strlen($this->Phone) > 2 ? $this->Phone : '',
                 'Email' => trim($this->Email),
                 'BTW' => trim($this->BTW),
-                'Neighborhood' => $this->escapeTextData(trim($this->Neighborhood))
+                'Neighborhood' =>$this->Neighborhood ?  $this->escapeTextData(trim($this->Neighborhood))  : ''
            ],
            "Customs" => [
                 'CustomsType' => $this->CustomsType,

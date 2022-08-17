@@ -57,7 +57,8 @@ class ShiptimizeMagento extends ShiptimizeV3
         \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $collectionFactory,
         \Magento\Framework\Locale\Resolver $locale,
         \Magento\Framework\App\Filesystem\DirectoryList $directory_list,
-        \Magento\Framework\Module\ResourceInterface $db_resource // get the module version 
+        \Magento\Framework\Module\ResourceInterface $db_resource, // get the module version 
+        \Magento\Backend\Helper\Data $backendHelper
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->configWriter = $configWriter;
@@ -73,7 +74,12 @@ class ShiptimizeMagento extends ShiptimizeV3
         $this->locale = $locale; 
 
         $this->db_resource = $db_resource;
+        $this->backendHelper = $backendHelper; 
         $this->is_dev = file_exists($directory_list->getRoot().'/isdevmachine') ? 1 : 0; 
+
+        if ($this->is_dev) {
+            self::$debug = true; 
+        }
     }
 
     /**
@@ -139,6 +145,99 @@ class ShiptimizeMagento extends ShiptimizeV3
         $this->connection->query($sql);
     }
 
+    /** 
+     * Create labels for the given order ids 
+     * @param array orderids - an array of order ids 
+     **/
+    public function printLabel($order_ids) {
+
+        if (empty($order_ids)) {
+            error_log("\nno order id was provided, cannot print label");
+            $this->messageManager->addWarning("No order id was provided cannot print label");
+        }
+
+        self::log("\n\n=== Requesting label for ". implode(',', $order_ids));
+        
+
+        $summary = $this->exportOrders($order_ids);
+        $labelorders = array(); 
+        $errors = array(); 
+
+        if(isset($summary->orderresponse)) {      
+          if (isset($summary->message)) {
+            array_push($errors, $summary->message); 
+          }
+
+          // Print Labels for exported orders without errors 
+          foreach ($summary->orderresponse as $order) {
+            if(isset($order->ErrorList)) { 
+              foreach($order->ErrorList as $error) {
+                if ($error->Id > 0 && ($error->Id != 200) && ($error->Id != 297)) {
+                  array_push($errors, 'Error: ' . $error->Tekst);
+                  self::log("Not printing $order->ShopItemId because $error->Tekst ");
+                }
+                else { // Error we want to ignore 
+                  self::log("Ignoring error $error->Id for $order->ShopItemId $error->Tekst ");
+                  array_push($labelorders, $order->ClientReferenceCode);               
+                }
+              }
+            }
+            else { // Print the label 
+              self::log("Printing label for $order->ShopItemId");
+              array_push($labelorders, $order->ClientReferenceCode); 
+            }
+          } 
+        }  
+        else {
+          self::log("No orders in export summary"); 
+        }
+        
+        self::log("Label orders  " . json_encode($labelorders));
+        self::log("\nErrors " . json_encode($errors));
+
+        if (!empty($labelorders)) { 
+          $labelresponse = self::getApi()->postLabelsStep1($labelorders); 
+          $labelresponse->ErrorList = $errors; 
+
+          self::log( "Labelresponse " . json_encode($labelresponse) ); 
+
+          if (isset($labelresponse->response->Error) && $labelresponse->response->Error->Id > 0 ) {
+            $this->messageManager->addWarning( $labelresponse->response->Error->Info);
+          }
+
+          if (isset($labelresponse->response->CallbackURL)) {
+            // warnings load before page load 
+            $this->messageManager->addWarning('<div id="shiptimize_label_status">' . $this->__("requestinglabel") . ' ' . implode(',', $labelorders) . '</div>'
+            . "<script> 
+                var labelmonitorurl = '" .  $this->backendHelper->getUrl("shiptimize/shipping/labelmonitorstatus", array()) . "';
+
+                var shiptimize_label_request = '" . $this->__("requestinglabel") . "';
+                var shiptimize_label_click = '" . $this->__("labelclick") . "';
+                var shiptimize_label_label = '" . $this->__("label") . "'; 
+
+                console.log('labelmonitor ' , labelmonitorurl);
+
+                function shiptimizeMonitorLabelStatus() {
+                    if(typeof(shiptimize) == 'undefined') {
+                        setTimeout(shiptimizeMonitorLabelStatus, 500);
+                        return;  
+                    }
+                    shiptimize.openLoader(shiptimize_label_request);
+                    shiptimize.monitorLabelStatus('" . $labelresponse->response->CallbackURL ."'); 
+                }
+
+                shiptimizeMonitorLabelStatus();
+               </script>");
+          }
+
+          return $labelresponse;
+        }
+        else { 
+          array_push($errors, 'no labels to print');
+        }
+
+        $this->messageManager->addWarning(implode('<br/>', $errors)); 
+    }
 
     /**
      * If we get an auth error we try to get a new token, once
@@ -160,13 +259,19 @@ class ShiptimizeMagento extends ShiptimizeV3
         }
 
         $nInvalid = 0;
-        $shiptimize_orders = [];
+        $shiptimize_orders = array();
+        $shiptimize_patch_orders = array(); 
+     
 
         foreach ($order_ids as $order_id) {
             $order = $this->orderFactory->create();
             $order->bootstrap($order_id);
+            $ordermeta = $order->getOrderMeta(); 
 
-            if ($order->isValid()) {
+            if ( isset($ordermeta->status) && $ordermeta->status == ShiptimizeOrder::$STATUS_EXPORTED_SUCCESSFULLY ) {
+                array_push( $shiptimize_patch_orders, $order->get_api_props() );
+            }
+            else if ($order->isValid()) {
                 array_push($shiptimize_orders, $order->getApiProps());
             } else {
                 ++$nInvalid;
@@ -175,20 +280,51 @@ class ShiptimizeMagento extends ShiptimizeV3
             }
         }
  
-        $response = $this->getApi()->postShipments($shiptimize_orders);
-        if ($response->httpCode == 401 && $try < 1) {
-            $this->refreshToken();
-            return $this->exportOrders($order_ids, 1);
+        // POST new orders 
+        if (count($shiptimize_orders)) { 
+            $response = $this->getApi()->postShipments($shiptimize_orders);
+            
+            if ($response->httpCode == 401 && $try < 1) {
+                $this->refreshToken();
+                return $this->exportOrders($order_ids, 1);
+            }
+
+            if ($response->httpCode != 200) {
+              $this->messageManager->addError("The API returned an error $response->httpCode no orders where exported ");
+            }
+
+            $summary = $this->shipmentsResponse($response);
+
+            if (isset($response->response->AppLink)) {
+                $summary->login_url =$response->response->AppLink;
+            }
         }
 
-        if ($response->httpCode != 200) {
-          $this->messageManager->addError("The API returned an error $response->httpCode no orders where exported ");
-        }
+        // PATCH Existing orders 
+        if (count($shiptimize_patch_orders)) { 
+            $response = $this->getApi()->postShipments($shiptimize_patch_orders);
 
-        $summary = $this->shipmentsResponse($response);
+            if ($response->httpCode == 401 && $try < 1) {
+                $this->refreshToken();
+                return $this->exportOrders($order_ids, 1);
+            }
+            else if ($response->httpCode != 200) {
+              $this->messageManager->addError("The API returned an error $response->httpCode no orders where exported ");
+            }
+            else {
+                $patchsummary = $this->shipmentsResponse($response);
+                $summary->n_success += $patchsummary->n_success; 
+                $summary->n_errors += $patchsummary->n_errors; 
+         
+                foreach($patchsummary->orderresponse as $order) {
+                  array_push($summary->orderresponse, $order);  
+                }
+            }
+ 
 
-        if (isset($response->response->AppLink)) {
-            $summary->login_url =$response->response->AppLink;
+            if (isset($response->response->AppLink)) {
+                $summary->login_url =$response->response->AppLink;
+            }
         }
 
     
@@ -395,7 +531,6 @@ class ShiptimizeMagento extends ShiptimizeV3
      */ 
     protected function saveToken($token)
     {
-
         $callbackurl =  $this->scopeConfig->getValue('shipping/shiptimizeshipping/apiurl', \Magento\Store\Model\ScopeInterface::SCOPE_STORE); 
         
         if(!$callbackurl){
@@ -411,33 +546,65 @@ class ShiptimizeMagento extends ShiptimizeV3
      */
     public function shipmentsResponse($response)
     {
-        if ($response->httpCode != 200) {
-            return (object) [
+        $summary = (object) [
               "n_success" => 0,
-              "n_errors" => 0
-            ];
-        }
- 
-        $n_success = 0;
-        $n_errors = 0;
+              "n_errors" => 0,
+              "orderresponse" => array()
+        ];
+
+        if ($response->httpCode != 200) {
+            return $summary; 
+        } 
+
 
         if (isset($response->response->Shipment)) {
             foreach ($response->response->Shipment as $shipment) {
+                array_push($summary->orderresponse, $shipment);
                 $id = $shipment->ShopItemId;
                 $order = $this->orderFactory->create();
                 $order->bootstrap($id);
 
+                $actualerror = 0; 
                 $hasErrors = isset($shipment->ErrorList);
                 $order->grantOrderMetaExists();
             
-                $order->setStatus($hasErrors ?  \Shiptimize\Shipping\Model\Core\ShiptimizeOrder::$STATUS_EXPORT_ERRORS : \Shiptimize\Shipping\Model\Core\ShiptimizeOrder::$STATUS_EXPORTED_SUCCESSFULLY);
-            
-                if ($hasErrors) {
-                    $order->appendErrors($shipment->ErrorList);
-                    ++$n_errors;
-                } else {
-                    ++$n_success;
+                if ( $hasErrors ) {
+                    $order->appendErrors($shipment->ErrorList);  
+                    $actualerror = 1;   
+                    foreach ($shipment->ErrorList as $error) {
+                        if($error->Id == 298) { // Shipment was deleted in the app and contains incorrect export status in the shop system
+                            self::log("Order $shipment->ShopItemId  was deleted in app export again");
+                            $order->setStatus(ShiptimizeOrder::$STATUS_NOT_EXPORTED); 
+                            $this->exportOrders(array($shipment->ShopItemId)); 
+
+                            $labelsummary = $this->printLabel(array($shipment->ShopItemId)); 
+
+                            foreach ($labelsummary->errors as $err) {
+                                array_push( $summary->errors, $err );  
+                            }               
+
+                            $actualerror = empty($labelsummary->errors) ? 0 : 1;
+                        } 
+                        else if($error->Id == 297 || $error->Id == 200) { // Shipment already pre-alerted 
+                            self::log("Considering error $error->Id as warning. $error->Tekst");
+                            $actualerror  = 0; 
+                        }
+                        else {
+                            self::log("Appending Error $error->Id $error->Tekst");
+                            array_push ( $summary->errors, "$id - " . $error->Tekst );   
+                        } 
+                    }
                 }
+
+                // some stuff the api considers an error we consider a warning 
+                if ($actualerror) {
+                    ++$summary->n_errors;  
+                }
+                else {
+                    ++$summary->n_success; 
+                }
+
+                $order->setStatus($actualerror ?  \Shiptimize\Shipping\Model\Core\ShiptimizeOrder::$STATUS_EXPORT_ERRORS : \Shiptimize\Shipping\Model\Core\ShiptimizeOrder::$STATUS_EXPORTED_SUCCESSFULLY);
 
                 $warnings = '';
 
@@ -469,14 +636,10 @@ class ShiptimizeMagento extends ShiptimizeV3
             $this->messageManager->addError(json_encode($response->response));
         }
 
-        return (object) [
-          "n_success" => $n_success,
-          "n_errors" => $n_errors
-        ];
+        return $summary;
     } 
     /**
      * return a label for the given status
-     *
      * @param int $status
      *
      * @return a string representation of the status

@@ -1,3 +1,7 @@
 {
-    "selectpickuperror": "click \"choose pickup location\" and choose a location"
+    "selectpickuperror": "click \"choose pickup location\" and choose a location",
+    "requestinglabel" : "Requesting label",
+    "labelclick": "click % to get your label if a new window did not open",
+    "label":"Label",
+    "labelprinted": "Label Printed"
 }

@@ -42,5 +42,9 @@
     "If you do not have a %s account" : "Als u geen %s-account hebt",
     "Carrier Exists" : "Vervoerder bestaat",
     "Added Carrier" : "Vervoerder toegevoegd",
-    "selectpickuperror": "klik op \"kies afhaalpunt\" en kies een locatie"
+    "selectpickuperror": "klik op \"kies afhaalpunt\" en kies een locatie",
+    "requestinglabel" : "Label maken",
+    "labelclick": "klik op % om uw label te krijgen als er geen nieuw venster geopend werd",
+    "label":"Etiket",
+    "labelprinted": "Etiket gedrukt"
 }

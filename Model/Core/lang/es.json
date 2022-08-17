@@ -41,5 +41,9 @@
     "No": "No",
     "Request account": "Solicitar cuenta",
     "If you do not have a %s account": "Si no tienes una cuenta %s",
-    "selectpickuperror": "haga clic en \"elegir punto de recogida\" y elija una ubicación"
+    "selectpickuperror": "haga clic en \"elegir punto de recogida\" y elija una ubicación",
+    "requestinglabel" : "Creando etiquetas",
+    "labelclick": "haga clic en % para obtener su etiqueta si no se ha abierto una nueva ventana",
+    "label":"Etiqueta",
+    "labelprinted": "Etiqueta impresa"
 }

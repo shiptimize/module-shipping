@@ -38,29 +38,43 @@ require([
 
         window.shiptimize_get_shipping_address = function(){ 
 
-            var addr = quote.shippingAddress();
+            var addr = shiptimize_get_shipping_address_from_checkout(); 
             
-            if(addr == null){
+            if (!addr || !addr.city) {
+                addr = quote.shippingAddress();
+            }
+
+            if (addr == null) {
                 console.log("No shipping address was found, trying to obtain a billingAddress we can use");
                 addr = quote.billingAddress();
             } 
 
-            if(!addr.city){
-                addr = shiptimize_get_shipping_address_from_checkout(); 
+            if (addr == null) {
+                console.log("It was not possible to obtain an address");
+                window.shiptimize_address = {
+                    'Streetname1': '',
+                    'Streetname2': '',
+                    'HouseNumber':'',
+                    'NumberExtension': '',
+                    'PostalCode':'',
+                    'City': '',
+                    'Country': '',
+                    'State': ''
+                };
+                return;
             }
-
             
-            console.log('Shipping to: ',addr);
+            console.log('Shipping to: ', addr);
 
-            window.shiptimize_address ={
+            window.shiptimize_address = {
                 'Streetname1':  typeof(addr.street) != 'undefined' && typeof(addr.street[0]) != 'undefined' ? addr.street[0] :'',
                 'Streetname2':  typeof(addr.street) != 'undefined' && typeof(addr.street[1]) != 'undefined' ? addr.street[1] :'',
                 'HouseNumber':'',
                 'NumberExtension': '',
                 'PostalCode': addr.postcode,
                 'City': addr.city,
-                'Country': addr.countryId,
-                "State":  typeof(addr.regionCode) != 'undefined'  ? addr.regionCode : ''
+                'Country': typeof(addr.countryId) != 'undefined' ? addr.countryId : (typeof(addr.country_id) != 'undefined' ? addr.country_id : '') ,
+                "State":  typeof(addr.regionCode) != 'undefined' ? addr.regionCode : ''
             };
  
             console.log("GET SHIPPING ADDRESS quoteaddr", addr, ' shiptimize_address ', shiptimize_address);
