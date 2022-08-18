@@ -91,9 +91,8 @@ class ShiptimizeColumn extends \Magento\Ui\Component\Listing\Columns\Column {
     {
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) { 
-                if (isset($item['shiptimize_status'])) { 
-                    $item['shiptimize_order_id'] = html_entity_decode(  $this->getStatusIcon($item['shiptimize_status'],$item['shiptimize_message'],$item['shiptimize_pickup_label'],$item['increment_id']) ); 
-                }
+                $status = isset($item['shiptimize_status']) ? $item['shiptimize_status'] : ShiptimizeOrder::$STATUS_NOT_EXPORTED; 
+                $item['shiptimize_order_id'] = html_entity_decode(  $this->getStatusIcon($status,$item['shiptimize_message'],$item['shiptimize_pickup_label'],$item['increment_id']) );  
             }
         }
 

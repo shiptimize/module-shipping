@@ -244,8 +244,8 @@ class ShiptimizeApiV3
         ];
 
         if ($this->is_dev) {
-            error_log("get_pickup_locations Address ".var_export($address, true) .";  
-            Carrier :".$carrier_id);
+            error_log("get_pickup_locations Address " . var_export($address, true) .";  
+            Carrier :" . $carrier_id);
         }
 
         $curl =  $this->sendToApi('POST', '/pickuppoints', $data);
@@ -266,7 +266,7 @@ class ShiptimizeApiV3
         ];
 
         if ($this->is_dev) {
-            error_log("postShipments ".json_encode($shipments));
+            error_log("postShipments " . json_encode($shipments));
         }
 
         $data = (object) [

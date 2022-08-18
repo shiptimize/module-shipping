@@ -1,9 +1,10 @@
 <?php
 namespace Shiptimize\Shipping\Block\Adminhtml\Form\Field;
+use \Magento\Directory\Model\Country; 
 
 class RegionList extends \Magento\Config\Block\System\Config\Form\Field
 {
-    private \Magento\Directory\Model\Country $country; 
+    private $country; 
      
      /**
       * @var array $carriers, the carriers as received from the api

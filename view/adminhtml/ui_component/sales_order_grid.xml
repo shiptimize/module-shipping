@@ -11,7 +11,7 @@
                     <argument name="data" xsi:type="array">
                         <item name="config" xsi:type="array">
                             <item name="type" xsi:type="string">order_mass</item>
-                            <item name="label" xsi:type="string" translate="true">Shiptimize</item> 
+                            <item name="label" xsi:type="string" translate="true">Shiptimize ></item> 
                         </item> 
                     </argument>
                     <argument name="actions" xsi:type="array">
