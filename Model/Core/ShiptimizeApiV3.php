@@ -275,6 +275,17 @@ class ShiptimizeApiV3
         return $this->sendToApi('POST', '/shipments', $data, $headers);
     }
 
+    /** 
+     * PATCH Shipments  
+     *
+     * @param mixed $shiptments - an array of shipments to send to the API 
+     * @param string $accept_lang - ex en_US is set messages will be localized, defaults to english  
+     * 
+     */
+    public function patchShipments($shipments, $accept_lang = '') {
+        return $this->sendToApi('PATCH', $shipments, $accept_lang); 
+    }
+
     /**
      * Grant we are sending utf8 strings to the api
      * @param String $str - the string to encode

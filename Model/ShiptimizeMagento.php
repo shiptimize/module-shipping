@@ -302,7 +302,7 @@ class ShiptimizeMagento extends ShiptimizeV3
 
         // PATCH Existing orders 
         if (count($shiptimize_patch_orders)) { 
-            $response = $this->getApi()->postShipments($shiptimize_patch_orders);
+            $response = $this->getApi()->patchShipments($shiptimize_patch_orders);
 
             if ($response->httpCode == 401 && $try < 1) {
                 $this->refreshToken();
@@ -320,7 +320,6 @@ class ShiptimizeMagento extends ShiptimizeV3
                   array_push($summary->orderresponse, $order);  
                 }
             }
- 
 
             if (isset($response->response->AppLink)) {
                 $summary->login_url =$response->response->AppLink;
