@@ -66,6 +66,7 @@ class ShiptimizeColumn extends \Magento\Ui\Component\Listing\Columns\Column {
 
                 default: //Not exported or no status 
                   $class .= ' shiptimize-icon-not-exported';   
+                  $message = $this->shiptimize->__('Not Exported');
                   break;
             }
         } else {

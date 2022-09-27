@@ -57,10 +57,21 @@ class LabelMonitorStatus extends \Magento\Framework\App\Action\Action
         if (isset($response->response->Finished) && $response->response->Finished == 100) {
           if (isset($response->response->ClientReferenceCodeList)) {
             foreach($response->response->ClientReferenceCodeList as $labelresult) {
-              $mageorder = $this->orderFactory->create()->loadByIncrementId($labelresult->ReferenceCode); 
+              $orderid = $labelresult->ReferenceCode; 
+              $shipmentid = 0; 
+              
+              $this->shiptimize->log("Label print finished orderid $orderid " . stripos($orderid, "--"));
+              
+              if(stripos($orderid, "--") !== false) {
+                $parts = explode('--', $orderid);
+                $shipmentid = $parts[1];
+                $orderid = $parts[0];
+
+                $this->shiptimize->log("Label print finished found shipmentid  " . implode(" " , $parts));
+              }
 
               $order = $this->shiptimizeOrderFactory->create();
-              $order->bootstrap($mageorder->getId());
+              $order->bootstrap($orderid, $shipmentid);
               $status = ShiptimizeOrder::$LABEL_STATUS_NOT_REQUESTED; 
               $msg =  '';
               $labelurl = ''; 
@@ -78,6 +89,7 @@ class LabelMonitorStatus extends \Magento\Framework\App\Action\Action
               $labelresult->message = $msg; 
               $order->addMessage($msg); 
               $order->setStatus($status);
+              $order->setTrackingId($labelresult->TrackingId,'');
             }    
           }  
         }

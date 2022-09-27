@@ -14,5 +14,9 @@
                 type="Shiptimize\Shipping\Plugin\AddDataToOrdersGrid"
                 sortOrder="10"
                 disabled="false"/>
+    </type> 
+    <!-- plug into the button list event --> 
+    <type name="Magento\Backend\Block\Widget\Button\Toolbar">
+        <plugin name="Shiptimize_Shipping::orderview" type="Shiptimize\Shipping\Plugin\Widget\ShipmentButtons" sortOrder="1000" />
     </type>
 </config>

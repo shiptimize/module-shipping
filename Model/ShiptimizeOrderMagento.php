@@ -7,6 +7,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 {
     private $magentoOrder;
     private $tableName;
+    private $ShipmentId = 0; 
  
     public function __construct(
         \Magento\Framework\App\ResourceConnection $dbResource,
@@ -15,7 +16,9 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         \Magento\Framework\Message\ManagerInterface $messageManager,
         \Magento\Sales\Model\Convert\Order $convertOrder,
         \Magento\Sales\Model\Order\Shipment\TrackFactory $trackFactory,
-        \Magento\Shipping\Model\ShipmentNotifier $shipmentNotifier
+        \Magento\Shipping\Model\ShipmentNotifier $shipmentNotifier,
+        \Magento\Sales\Api\ShipmentRepositoryInterface $shipmentInterface,
+        \Magento\Framework\App\Filesystem\DirectoryList $directory_list
     )
     { 
         $this->dbResource = $dbResource;
@@ -28,8 +31,9 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         $this->convertOrder = $convertOrder;
         $this->trackFactory = $trackFactory;
         $this->shipmentNotifier = $shipmentNotifier;  
+        $this->shipmentInterface = $shipmentInterface; 
 
-        $this->is_dev = !isset($_SERVER['HTTP_HOST']) ||stripos($_SERVER['HTTP_HOST'], '.local') !== false ? 1 : 0;
+        $this->is_dev = file_exists($directory_list->getRoot().'/isdevmachine') ? 1 : 0; 
     }
 
     /**
@@ -118,7 +122,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
     /** 
      * Extract the shipment properties from magento to send to the api 
      */
-    public function bootstrap($mage_id)
+    public function bootstrap($mage_id, $shipmentid = '')
     {
         if (!$mage_id) {
             error_log( "Invalid EMPTY order id on ShiptimizeOrderMagento::bootstrap");
@@ -128,6 +132,10 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         $this->ShopItemId = $mage_id;
         $this->magentoOrder = $this->orderRepository->get($this->ShopItemId);
         $this->ClientReferenceCode = $this->magentoOrder->getIncrementId();  // the name that shows up on the list, is not the same as the numerical Id
+        if ($shipmentid) {
+            $this->ShipmentId = $shipmentid; 
+            $this->ClientReferenceCode .= '--' . $shipmentid;
+        }
 
         if (!$this->magentoOrder) {
             error_log("$mage_id does not match an existing order ");
@@ -325,7 +333,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                                 }
                             }
 
-                            if (!$foundoption) {  
+                            if (!$foundoption && $option) {  
                                 $this->addMessage($this->getFormatedMessage("unknown option $option ignoring "));
                             }
                         break;
@@ -389,11 +397,21 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
     }
 
     /**
+     * When printing a label for a specific shipment 
+     * We only want to append the items in that shipment  
+     */
+    public function getItemsFromShipment() {
+
+        $shipment = $this->shipmentInterface->get($this->ShipmentId); 
+        return $shipment->getAllItems(); 
+    }
+
+    /**
      * The list of items contains the variation and the parent product, ignore the parent 
      */
     public function extractItems()
     {
-        $items = $this->magentoOrder->getAllItems();
+        $items = $this->ShipmentId ? $this->getItemsFromShipment() : $this->magentoOrder->getAllItems();
         $this->ShipmentItems = array();
         $systemUnit = $this->scopeConfig->getValue('general/locale/weight_unit');
         $this->Weight = 0;
@@ -401,17 +419,17 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         $this->Description = '';
 
         foreach ($items as $item) {
-            $data = $item->getData(); 
-            $qty =  $data['qty_ordered'];
+            $data = $item->getData();  
+            $qty =  isset($data['qty_ordered']) ? $data['qty_ordered'] : $data['qty'];
             $weight = $this->getWeightInGrams($data['weight'],$systemUnit);
-            $value =  number_format($qty * $data['price_incl_tax'], 2, '.', '');
+            $value =  number_format($qty * (isset($data['price_incl_tax']) ? $data['price_incl_tax'] : $data['price']), 2, '.', '');
 
             if ($value > 0) {
                 array_push(
                     $this->ShipmentItems,
                         array(
                             'Count' => $qty,
-                            'Id' => $data['item_id'],
+                            'Id' => isset($data['item_id']) ? $data['item_id'] : $data['product_id'],
                             'Name' => $this->escapeTextData($data['name']),
                             'Type' => 4, // 1 - Gift, 2 - Documents, 3 - Sample , 4 - Other
                             'Value' => $value,
@@ -430,9 +448,9 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
     public function executeSQL($sql)
     {
-        if ($this->is_dev) {
-            error_log($sql);
-        }
+        // if ($this->is_dev) {
+        //     error_log($sql);
+        // }
         $this->connection->query($sql);
     }
 
@@ -540,6 +558,14 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
      */
     public function setTrackingId($tracking_id, $carrier_name)
     {
+        if ($this->is_dev) {
+            error_log("Set Tracking id $tracking_id , carrier_name $carrier_name"); 
+        }
+
+        if (!$tracking_id) {
+            return;
+        }
+
         $shipments = $this->magentoOrder->getShipmentsCollection()->getItems(); 
         
         $trackingdata = array(
@@ -552,26 +578,47 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
             $this->shipOrder($trackingdata); 
         }
         else { 
-            $shipment = ''; 
 
-            # yes, magento could pull off the amazing thing 
-            # of returning a non empty array with undefined items in it   
-            # reproduce by manually deleting the tracking info in the order details 
-            # doing it the safe way
-            foreach($shipments as $s) { 
-                if( get_class($s) == 'Magento\Sales\Model\Order\Shipment') 
-                {
-                    $shipment = $s; 
-                } 
+            if($this->ShipmentId) {
+                $shipment = $this->shipmentInterface->get($this->ShipmentId); 
+            }
+            else { // Append to the last one 
+                $shipment = ''; 
+
+                # yes, magento could pull off the amazing thing 
+                # of returning a non empty array with undefined items in it   
+                # reproduce by manually deleting the tracking info in the order details 
+                # doing it the safe way
+                foreach($shipments as $s) { 
+                    if( get_class($s) == 'Magento\Sales\Model\Order\Shipment') 
+                    {
+                        $shipment = $s; 
+                    } 
+                }
             }
             
             # Could we get a valid shipment? 
             if ($shipment) { 
-                $orderShipment = $this->convertOrder->toShipment($this->magentoOrder);
-                $track = $this->trackFactory->create()->addData($trackingdata);
-                $shipment->addTrack($track)->save();
+                # Check if there's already a tracking stored for this order  
+                $foundTracking = false; 
+                foreach ( $shipment->getAllTracks() as $track) { 
+                    if($track->getNumber() == $tracking_id) {
+                        $foundTracking = true; 
+                        if ($this->is_dev) {
+                            error_log("Found a matching tracking $tracking_id will set title: $carrier_name");
+                        }
+                        
+                        $track->setTitle($carrier_name); 
+                    }
+                }
 
-                $this->shipmentNotifier->notify($orderShipment);
+                if (!$foundTracking) {
+                    $orderShipment = $this->convertOrder->toShipment($this->magentoOrder);
+                    $track = $this->trackFactory->create()->addData($trackingdata);
+                    $shipment->addTrack($track)->save();
+
+                    $this->shipmentNotifier->notify($orderShipment);
+                }
             }
             else {
                 error_log("Could not find a valid shipment in the list of shipments returned by magento, adding a new one "); 
@@ -587,12 +634,10 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
      * Return the created shipment
      */ 
     private function shipOrder($trackingdata)
-    {
-        if(! $this->magentoOrder->canShip() ){
-            error_log( "Can't create shipment for this order "); 
-            $this->addMessage("Can't add trackingId received from the api: $tracking_id ");
-            return;
-        }
+    { 
+        // It's possible we're not creating any shipment but just append to an existing one 
+        // therefore it's possible for an order to not be able to "ship", but still be missing 
+        // a tracking id 
 
         $orderShipment = $this->convertOrder->toShipment($this->magentoOrder);
 

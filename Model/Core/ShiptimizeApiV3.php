@@ -261,6 +261,21 @@ class ShiptimizeApiV3
      */
     public function postShipments($shipments, $accept_lang = '')
     {
+       return $this->sendShipments('POST', $shipments,$accept_lang); 
+    }
+
+    /** 
+     * PATCH Shipments  
+     *
+     * @param mixed $shiptments - an array of shipments to send to the API 
+     * @param string $accept_lang - ex en_US is set messages will be localized, defaults to english  
+     * 
+     */
+    public function patchShipments($shipments, $accept_lang = '') { 
+        return $this->sendShipments('PATCH', $shipments, $accept_lang); 
+    }
+
+    public function sendShipments($method,$shipments,$accept_lang) {
         $headers = [
             'accept-language'=> $accept_lang ? $accept_lang : 'en_US',
         ];
@@ -272,18 +287,9 @@ class ShiptimizeApiV3
         $data = (object) [
             'Shipment' => $shipments
         ];
-        return $this->sendToApi('POST', '/shipments', $data, $headers);
-    }
 
-    /** 
-     * PATCH Shipments  
-     *
-     * @param mixed $shiptments - an array of shipments to send to the API 
-     * @param string $accept_lang - ex en_US is set messages will be localized, defaults to english  
-     * 
-     */
-    public function patchShipments($shipments, $accept_lang = '') {
-        return $this->sendToApi('PATCH', $shipments, $accept_lang); 
+        error_log("Requesting shipments with method $method ");
+        return $this->sendToApi($method, '/shipments', $data, $headers);
     }
 
     /**
@@ -318,7 +324,6 @@ class ShiptimizeApiV3
     protected function sendToApi($method = 'GET', $endpoint = '/', $data = '', $headers = [])
     {
         $result = new \stdClass(); 
- 
 
         // this can be called from crontab or other local scripts
         if (stripos($endpoint, "http") !== FALSE) { 
@@ -358,6 +363,11 @@ class ShiptimizeApiV3
 
         if ($method == 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+        }
+
+        if ($method == 'PATCH') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
             curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
         }
 
