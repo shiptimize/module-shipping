@@ -31,8 +31,9 @@ require([
                     $.extend({}, checkoutProvider.get('shippingAddress'), shippingAddressData)
                 );
             });
-            checkoutDataResolver.resolveShippingAddress();
 
+            // this call will trigger a new call to the server to refresh the shipping methods
+            //checkoutDataResolver.resolveShippingAddress(); 
             return shippingAddressData; 
         };
 
