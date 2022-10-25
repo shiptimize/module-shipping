@@ -283,6 +283,8 @@ class ShiptimizeMagento extends ShiptimizeV3
             return $summary;
         }
 
+        self::log("exportOrders " . var_export($order_ids, true));
+
         $nInvalid = 0;
         $shiptimize_orders = array();
         $shiptimize_patch_orders = array(); 
@@ -600,13 +602,13 @@ class ShiptimizeMagento extends ShiptimizeV3
                 $orderid = $shipment->ShopItemId; 
                 $shipmentid = 0; 
                 if(stripos($shipment->ClientReferenceCode, '--') !== false) {
-                    $parts = explode('--', $shipment->ClientReferenceCode);
-                    $orderid = $parts[0]; 
+                    $parts = explode("--", $shipment->ClientReferenceCode);
+                    self::log("ClientReferenceCode $shipment->ClientReferenceCode " . var_export($shipment, true)  . ' parts ' . var_export($parts,true));
+                    $orderid = $shipment->ShopItemId; 
                     $shipmentid = $parts[1]; 
                 }
 
-                array_push($summary->orderresponse, $shipment);
-                $id = $shipment->ShopItemId;
+                array_push($summary->orderresponse, $shipment); 
                 $order = $this->orderFactory->create();
                 $order->bootstrap($orderid, $shipmentid);
 
@@ -614,30 +616,31 @@ class ShiptimizeMagento extends ShiptimizeV3
                 $hasErrors = isset($shipment->ErrorList);
                 $order->grantOrderMetaExists();
             
+                $orderids = array(
+                    array(
+                        'shipmentid' => $shipmentid,
+                        'orderid' => $orderid
+                    )
+                ); 
+
                 if ( $hasErrors ) {
                     $order->appendErrors($shipment->ErrorList);  
                     $actualerror = 1;   
                     foreach ($shipment->ErrorList as $error) {
-
-                        if($error->Id == 200) {
+                        $ordermeta = $order->getOrderMeta();
+                        if($error->Id == 200 && (!$ordermeta || $ordermeta['shiptimize_status'] != ShiptimizeOrder::$LABEL_STATUS_PRINTED)) {
                             self::log("Order reference $shipment->ClientReferenceCode  was exported but status is not correctly set");
                             $order->setStatus(ShiptimizeOrder::$STATUS_EXPORTED_SUCCESSFULLY);  
                             
-                            $this->exportOrders(array(
-                                'shipmentid' => $shipmentid,
-                                'orderid' => $orderid
-                            ),1);    
+                            $this->exportOrders($orderids,1);    
 
                             $actualerror = 0;
                         }
 
                         if($error->Id == 298) { // Shipment was deleted in the app and contains incorrect export status in the shop system
-                            self::log("Order $shipment->ShopItemId  was deleted in app export again");
+                            self::log("Order $shipment->ClientReferenceCode was deleted in app export again orderid $orderid , shipmentid $shipmentid");
                             $order->setStatus(ShiptimizeOrder::$STATUS_NOT_EXPORTED); 
-                            $this->exportOrders(array(
-                                'shipmentid' => $shipmentid,
-                                'orderid' => $orderid
-                            ),1); 
+                            $this->exportOrders($orderids,1); 
 
                             if ($printLabel) { 
                                 $labelsummary = $this->printLabel(array($shipment->ShopItemId)); 

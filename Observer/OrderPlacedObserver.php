@@ -1,12 +1,13 @@
 <?php
 namespace Shiptimize\Shipping\Observer;
+use Shiptimize\Shipping\Model\ShiptimizeMagento;
 
 class OrderPlacedObserver implements \Magento\Framework\Event\ObserverInterface
 {
     public function __construct(
         \Magento\Checkout\Model\Session $_checkoutSession,
         \Shiptimize\Shipping\Model\ShiptimizeOrderMagento $shiptimize_order,
-        \Shiptimize\Shipping\Model\ShiptimizeMagento $shiptimize,
+        ShiptimizeMagento $shiptimize,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
     ){
         $this->_checkoutSession = $_checkoutSession;
@@ -37,7 +38,7 @@ class OrderPlacedObserver implements \Magento\Framework\Event\ObserverInterface
             return;
         } 
 
-        error_log("Order_placed $orderId ");
+        ShiptimizeMagento::log("Order_placed $orderId ");
         
         $this->shiptimize_order->setShopItemId($orderId); 
         $this->shiptimize_order->grantOrderMetaExists(); 
@@ -55,7 +56,7 @@ class OrderPlacedObserver implements \Magento\Framework\Event\ObserverInterface
         $shiptimize_allowed_statuses = explode(',', $this->scopeConfig->getValue('shipping/shiptimizeshipping/exportpreset'))       
         ;
 
-        error_log(" Auto Export $autoexport  Order: $orderId  OrderStatus: ".  $order->getStatus());
+        ShiptimizeMagento::log(" Auto Export $autoexport  Order: $orderId  OrderStatus: ".  $order->getStatus());
         if ($autoexport && in_array( $order->getStatus(), $shiptimize_allowed_statuses) && $order->getStatus() != 'pending') {
             try{
                 error_log("Exporting order "); 
@@ -66,7 +67,7 @@ class OrderPlacedObserver implements \Magento\Framework\Event\ObserverInterface
         }
 
 
-        error_log("Session, Pickupid: ".$this->_checkoutSession->getShiptimizePickupId(). ' label: '. $this->_checkoutSession->getShiptimizePickupLabel() . ' Extended info: ' . $this->_checkoutSession->getShiptimizePickupExtendedInfo()  );
+        ShiptimizeMagento::log("Session, Pickupid: ".$this->_checkoutSession->getShiptimizePickupId(). ' label: '. $this->_checkoutSession->getShiptimizePickupLabel() . ' Extended info: ' . $this->_checkoutSession->getShiptimizePickupExtendedInfo()  );
 
 
         $this->_checkoutSession->setShiptimizePickupId("");

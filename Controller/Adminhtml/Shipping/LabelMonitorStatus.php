@@ -23,7 +23,9 @@ class LabelMonitorStatus extends \Magento\Framework\App\Action\Action
         \Shiptimize\Shipping\Model\ShiptimizeMagento $shiptimize,
         \Shiptimize\Shipping\Model\ShiptimizeOrderMagentoFactory $shiptimizeOrderFactory,
         \Magento\Framework\Controller\Result\JsonFactory $jsonfactory,
-        \Magento\Sales\Api\Data\OrderInterfaceFactory $orderFactory
+        \Magento\Sales\Api\Data\OrderInterfaceFactory $orderFactory,
+        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
         parent::__construct($context);
 
@@ -32,6 +34,8 @@ class LabelMonitorStatus extends \Magento\Framework\App\Action\Action
         $this->shiptimizeOrderFactory = $shiptimizeOrderFactory; 
         $this->shiptimize = $shiptimize; 
         $this->orderFactory = $orderFactory;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->orderRepository = $orderRepository;
     }
   
 
@@ -71,6 +75,16 @@ class LabelMonitorStatus extends \Magento\Framework\App\Action\Action
               }
 
               $order = $this->shiptimizeOrderFactory->create();
+              # Sometimes the client reference (increment_id) does not match the shopitemid (entity_id)
+              $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', $orderid, 'eq')->create();
+              $results = $this->orderRepository->getList($searchCriteria)->getItems();
+
+              # Make sure we're adding the entity_id not increment_id
+              if (!empty($results)) {
+                $searchedorder = array_pop($results);  
+                $orderid = $searchedorder->getId();
+              }
+
               $order->bootstrap($orderid, $shipmentid);
               $status = ShiptimizeOrder::$LABEL_STATUS_NOT_REQUESTED; 
               $msg =  '';

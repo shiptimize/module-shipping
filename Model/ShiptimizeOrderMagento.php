@@ -128,7 +128,8 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
             error_log( "Invalid EMPTY order id on ShiptimizeOrderMagento::bootstrap");
             return;
         }
-
+        ShiptimizeMagento::log("bootstrap orderid $mage_id, shipmentid $shipmentid"); 
+        
         $this->ShopItemId = $mage_id;
         $this->magentoOrder = $this->orderRepository->get($this->ShopItemId);
         $this->ClientReferenceCode = $this->magentoOrder->getIncrementId();  // the name that shows up on the list, is not the same as the numerical Id
