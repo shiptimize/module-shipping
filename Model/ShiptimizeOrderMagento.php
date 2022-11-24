@@ -661,11 +661,12 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
             // Save created Order Shipment
             $orderShipment->save();
             $orderShipment->getOrder()->save();
+            // If MSI is implemented we need to set the source
+            // $orderShipment->getExtensionAttributes()->setSourceCode('default');
             $orderShipment->save();
 
 
             $track = $this->trackFactory->create()->addData($trackingdata);
-
             $orderShipment->addTrack($track)->save();
 
             // Send Shipment Email

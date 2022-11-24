@@ -308,7 +308,14 @@ class ShiptimizeMagento extends ShiptimizeV3
             $order->bootstrap($orderid, $shipmentid);
             $ordermeta = $order->getOrderMeta(); 
 
-            if ( isset($ordermeta['shiptimize_status']) && $ordermeta['shiptimize_status'] == ShiptimizeOrder::$STATUS_EXPORTED_SUCCESSFULLY ) {
+            if ( 
+                isset($ordermeta['shiptimize_status']) 
+                && 
+                ( $ordermeta['shiptimize_status'] == ShiptimizeOrder::$STATUS_EXPORTED_SUCCESSFULLY 
+                || $ordermeta['shiptimize_status'] == ShiptimizeOrder::$LABEL_STATUS_PRINTED // Shipment request
+                ||  $ordermeta['shiptimize_status'] == ShiptimizeOrder::$LABEL_STATUS_ERROR
+                )
+            ) {
                 array_push( $shiptimize_patch_orders, $order->getApiProps() );
             }
             else if ($order->isValid()) {
@@ -663,7 +670,7 @@ class ShiptimizeMagento extends ShiptimizeV3
                         }
                         else {
                             self::log("Appending Error $error->Id $error->Tekst");
-                            array_push ( $summary->errors, "$id - " . $error->Tekst );   
+                            array_push ( $summary->errors, "$error->Id - " . $error->Tekst );   
                         } 
                     }
                 }

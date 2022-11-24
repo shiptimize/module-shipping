@@ -38,7 +38,7 @@ class ShiptimizeColumn extends \Magento\Ui\Component\Listing\Columns\Column {
         $class = 'shiptimize-icon shiptimize-tooltip-reference ';
 
         if ($status) {
-            if (strlen($message > 100)) {
+            if ($message && strlen($message > 100)) {
                 $class .= ' shiptimize-message-large ';
             }
 

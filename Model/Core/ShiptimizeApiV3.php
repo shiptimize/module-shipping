@@ -392,6 +392,10 @@ class ShiptimizeApiV3
      */
     public function removeBase64Padding($encoded_string)
     {
+        if(!$encoded_string){
+            return '';
+        }
+
         $chars = str_split($encoded_string); 
         $len =  strlen($encoded_string); 
         for ($i =$len -1; $chars[$i] == '='; --$i) {

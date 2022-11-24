@@ -371,7 +371,7 @@ abstract class ShiptimizeOrder
         }
 
         $this->Description = $this->escapeTextData($this->Description);
-        if (strlen($this->Description) > 255) {
+        if ($this->Description && strlen($this->Description) > 255) {
             $this->Description = substr($this->Description, 0, 255);
 
             //Make sure we are not sending a broken special char
@@ -383,7 +383,7 @@ abstract class ShiptimizeOrder
             }
         }
 
-        if(strlen($this->Description) < 3) {
+        if($this->Description && strlen($this->Description) < 3) {
             $this->addMessage($this->getFormatedMessage("Invalid description $this->Description ignoring "));
             $this->Description = ''; 
         }
@@ -518,9 +518,9 @@ abstract class ShiptimizeOrder
                 'NumberExtension' => $this->NumberExtension,
                 'PostalCode' => $this->PostalCode,
                 'City' =>  $this->escapeTextData($this->City),
-                'State' => strlen($this->State) > 1 ? $this->escapeTextData($this->State) : '',
+                'State' => $this->State && strlen($this->State) > 1 ? $this->escapeTextData($this->State) : '',
                 'Country' => $this->Country,
-                'Phone' => strlen($this->Phone) > 2 ? $this->Phone : '',
+                'Phone' => $this->Phone && strlen($this->Phone) > 2 ? $this->Phone : '',
                 'Email' => trim($this->Email),
                 'BTW' => trim($this->BTW),
                 'Neighborhood' =>$this->Neighborhood ?  $this->escapeTextData(trim($this->Neighborhood))  : ''
