@@ -1,6 +1,5 @@
 <?php
 namespace Shiptimize\Shipping\Model;
-
 use Shiptimize\Shipping\Model\Core\ShiptimizeOrder;
 
 class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeOrder
@@ -18,7 +17,8 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         \Magento\Sales\Model\Order\Shipment\TrackFactory $trackFactory,
         \Magento\Shipping\Model\ShipmentNotifier $shipmentNotifier,
         \Magento\Sales\Api\ShipmentRepositoryInterface $shipmentInterface,
-        \Magento\Framework\App\Filesystem\DirectoryList $directory_list
+        \Magento\Framework\App\Filesystem\DirectoryList $directory_list,
+        \Shiptimize\Shipping\Model\ShiptimizeShipMultiInventoryFactory $multiShipFactory
     )
     { 
         $this->dbResource = $dbResource;
@@ -32,7 +32,8 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         $this->trackFactory = $trackFactory;
         $this->shipmentNotifier = $shipmentNotifier;  
         $this->shipmentInterface = $shipmentInterface; 
-
+    
+        $this->multiShipFactory = $multiShipFactory;
         $this->is_dev = file_exists($directory_list->getRoot().'/isdevmachine') ? 1 : 0; 
     }
 
@@ -145,7 +146,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
         $this->extractAddress();
         $this->extractCarrier();
-        $this->extractItems();
+        $this->extractItems(); 
     }
  
     public function extractAddress()
@@ -557,14 +558,17 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
      * we should append a message saying the tracking id was pushed from the api
      * this should also be appended to the order details so the client can check it
      */
-    public function setTrackingId($tracking_id, $carrier_name)
+    public function setTrackingId($tracking_id, $carrier_name = '')
     {
+        $errors = array(); 
+
         if ($this->is_dev) {
             error_log("Set Tracking id $tracking_id , carrier_name $carrier_name"); 
         }
 
         if (!$tracking_id) {
-            return;
+            array_push($errors,  "No tackingId provided can't assign to a shipment."); 
+            return $errors;
         }
 
         $shipments = $this->magentoOrder->getShipmentsCollection()->getItems(); 
@@ -576,10 +580,9 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         );
 
         if (empty($shipments)) { 
-            $this->shipOrder($trackingdata); 
+            $errors = $this->shipOrder($trackingdata); 
         }
-        else { 
-
+        else {  
             if($this->ShipmentId) {
                 $shipment = $this->shipmentInterface->get($this->ShipmentId); 
             }
@@ -606,9 +609,8 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                     if($track->getNumber() == $tracking_id) {
                         $foundTracking = true; 
                         if ($this->is_dev) {
-                            error_log("Found a matching tracking $tracking_id will set title: $carrier_name");
-                        }
-                        
+                            error_log("Found a matching tracking $tracking_id will set title: $carrier_name"); 
+                        } 
                         $track->setTitle($carrier_name); 
                     }
                 }
@@ -620,14 +622,18 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
                     $this->shipmentNotifier->notify($orderShipment);
                 }
+                else {
+                    array_push($errors, "$tracking_id is already associated with a shipment in this order");
+                }
             }
             else {
                 error_log("Could not find a valid shipment in the list of shipments returned by magento, adding a new one "); 
-                $this->shipOrder($trackingdata); 
+                $errors = $this->shipOrder($trackingdata); 
             }
         }
 
         $this->addMessage("<br/>TrackingId received from the api: $tracking_id ");
+        return (object)array('Errors' => $errors); 
     }
 
     /**  
@@ -636,14 +642,26 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
      */ 
     private function shipOrder($trackingdata)
     { 
+
+        $sources = array(); 
+
+        if (class_exists('Magento\InventorySales\Model\ResourceModel\GetAssignedStockIdForWebsite'))
+        {
+            $multiStock = $this->multiShipFactory->create(); 
+            $multiStock->setOrder($this->magentoOrder);
+            $sources = $multiStock->getSourceIds();
+        }  
+
+        if (!empty($sources) && count($sources) > 1 ) {
+            return array("More than one source assigned to the website, can't automate creating a shipment: " . var_export($sources, true));
+        }
+
         // It's possible we're not creating any shipment but just append to an existing one 
         // therefore it's possible for an order to not be able to "ship", but still be missing 
         // a tracking id 
-
         $orderShipment = $this->convertOrder->toShipment($this->magentoOrder);
-
+        
         foreach ($this->magentoOrder->getAllItems() AS $orderItem) {
-
              // Check virtual item and item Quantity
             if (!$orderItem->getQtyToShip() || $orderItem->getIsVirtual()) {
                 continue;
@@ -654,15 +672,19 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
             $orderShipment->addItem($shipmentItem);
         }
 
+        // If MSI is implemented we need to set the source
+        if(count($sources) > 0) { 
+            foreach($sources as $sourcecode => $linkdata) {  
+                $orderShipment->getExtensionAttributes()->setSourceCode($sourcecode);
+            }
+        }
+
         $orderShipment->register();
         //$orderShipment->getOrder()->setIsInProcess(true);
         try {
-
             // Save created Order Shipment
             $orderShipment->save();
             $orderShipment->getOrder()->save();
-            // If MSI is implemented we need to set the source
-            // $orderShipment->getExtensionAttributes()->setSourceCode('default');
             $orderShipment->save();
 
 

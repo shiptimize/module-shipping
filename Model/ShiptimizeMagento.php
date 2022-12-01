@@ -133,7 +133,7 @@ class ShiptimizeMagento extends ShiptimizeV3
           }
 
           if ($data->TrackingId) {
-              $order->setTrackingId($data->TrackingId, isset($data->CarrierName) ? $data->CarrierName : '');
+            return $order->setTrackingId($data->TrackingId, isset($data->CarrierName) ? $data->CarrierName : '');
           }
         
           return (object)["Tekst" => "Success"];
