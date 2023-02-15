@@ -681,6 +681,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
         $orderShipment->register();
         //$orderShipment->getOrder()->setIsInProcess(true);
+
         try {
             // Save created Order Shipment
             $orderShipment->save();
@@ -696,9 +697,9 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
         } catch (\Exception $e) {
             $this->addMessage('<br/>' . $e->getMessage());
-            throw new \Magento\Framework\Exception\LocalizedException(
+            /*throw new \Magento\Framework\Exception\LocalizedException(
             __($e->getMessage())
-            );
+            );*/
         }
 
         return $orderShipment;
