@@ -37,8 +37,7 @@ require([
             return shippingAddressData; 
         };
 
-        window.shiptimize_get_shipping_address = function(){ 
-
+        window.shiptimize_get_shipping_address = function() { 
             var addr = shiptimize_get_shipping_address_from_checkout(); 
             
             if (!addr || !addr.city) {
@@ -77,7 +76,5 @@ require([
                 'Country': typeof(addr.countryId) != 'undefined' ? addr.countryId : (typeof(addr.country_id) != 'undefined' ? addr.country_id : '') ,
                 "State":  typeof(addr.regionCode) != 'undefined' ? addr.regionCode : ''
             };
- 
-            console.log("GET SHIPPING ADDRESS quoteaddr", addr, ' shiptimize_address ', shiptimize_address);
         }; 
 });

@@ -1,33 +1,34 @@
 <?php
 namespace Shiptimize\Shipping\Model;
 
-use Magento\Sales\Model\Order;
-use Magento\InventorySales\Model\ResourceModel\GetAssignedStockIdForWebsite; 
+if (class_exists("GetAssignedStockIdForWebsite")) { 
+    return;
+}
+
+use Magento\Sales\Model\Order; 
 use Magento\Store\Model\StoreManagerInterface;
-
-use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\InventoryApi\Api\GetStockSourceLinksInterface;
-use Magento\InventoryApi\Api\Data\StockSourceLinkInterface;
-
+use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\Api\SearchCriteriaBuilder;  
 
 /**
  *  Handles creating a shipment if multi inventory is enabled 
+ *  Remember to not create direct dependencies on Magento MultipleInventory classes as they may not exist 
  **/ 
 class ShiptimizeShipMultiInventory 
 {
 
-	public function __construct( 
-        GetAssignedStockIdForWebsite $getAssignedStockIdForWebsite,
+    private \Magento\Framework\ObjectManagerInterface $objectmanager; 
+
+	public function __construct(  
+        ObjectManagerInterface $objectmanager, 
         StoreManagerInterface $storeManager,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
-        GetStockSourceLinksInterface $getStockSourceLinks
+        SearchCriteriaBuilder $searchCriteriaBuilder
     )
     { 
-    	$this->getAssignedStockIdForWebsite = $getAssignedStockIdForWebsite;
+    	$this->objectmanager = $objectmanager;
     	$this->storeManager = $storeManager; 
 
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->getStockSourceLinks = $getStockSourceLinks;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder; 
     }
 
     public function setOrder($order) {
@@ -47,7 +48,8 @@ class ShiptimizeShipMultiInventory
             error_log($e->getMessage());
         }
 
-        return $this->getAssignedStockIdForWebsite->execute($websiteCode);
+        $istockid = $this->objectmanager->create("Magento\InventorySales\Model\ResourceModel\GetAssignedStockIdForWebsite"); 
+        return $istockid->execute($websiteCode);
     }
 
     /**
@@ -59,14 +61,16 @@ class ShiptimizeShipMultiInventory
     	}
 
         $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter(StockSourceLinkInterface::STOCK_ID, $stockId)
+            ->addFilter(\Magento\InventoryApi\Api\Data\StockSourceLinkInterface::STOCK_ID, $stockId)
             ->create();
 
         $result = [];
-        foreach ($this->getStockSourceLinks->execute($searchCriteria)->getItems() as $link) {
+        $istocksrc = $this->objectmanager->create("\Magento\InventoryApi\Api\Data\StockSourceLinkInterfaceFactory");  
+
+        foreach ($istocksrc->execute($searchCriteria)->getItems() as $link) {
             $result[$link->getSourceCode()] = $link->getData();
         }
 
         return $result;
     }
-}
+} 

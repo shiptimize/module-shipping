@@ -75,7 +75,7 @@ class ShiptimizeMagento extends ShiptimizeV3
 
         $this->db_resource = $db_resource;
         $this->backendHelper = $backendHelper; 
-        $this->is_dev = file_exists($directory_list->getRoot().'/isdevmachine') ? 1 : 0; 
+        $this->is_dev = defined("SHIPTIMIZE_DEV") ? 1 : 0; 
 
         if ($this->is_dev) {
             self::$debug = true; 
@@ -561,13 +561,13 @@ class ShiptimizeMagento extends ShiptimizeV3
         $html.='</p>';
 
         if (isset($summary->login_url)) {
-            $html.='<p> 
-                <strong>'. $this->__('Click') .' <a href="' . $summary->login_url . '" target="_blank">Shiptimize</a> ' .$this->__('if not opened') . '.</strong></p>';
+            $html .= '<p> 
+                <strong>'. $this->__('Click') .' <a href="' . $summary->login_url . '" target="_blank">Shiptimize</a> ' . $this->__('if not opened') . '.</strong></p>';
 
-            $html.='<script>window.open("'.$summary->login_url.'", "_blank");</script>';
+            $html .= '<script>window.open("' . $summary->login_url . '", "_blank");</script>';
         }
 
-        $html.= '</div>';
+        $html .= '</div>';
 
         return $html;
     }
@@ -782,7 +782,7 @@ class ShiptimizeMagento extends ShiptimizeV3
      */
     public static function log($msg, $force = false)
     {
-        if (!$force && !self::$debug) {
+        if (!$force && !defined("SHIPTIMIZE_DEV")) {
             return;
         }
  

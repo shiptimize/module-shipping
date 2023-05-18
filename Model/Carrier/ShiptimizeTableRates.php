@@ -91,17 +91,21 @@ class ShiptimizeTableRates extends \Magento\Shipping\Model\Carrier\AbstractCarri
 
         foreach ($rates as $rate) {
             /** @var \Magento\Quote\Model\Quote\Address\RateResult\Method $method */
-            $method = $this->rateMethodFactory->create();
-            $title =  $rate->display_name ? $rate->display_name :  $global_name . ' - '. $rate->carrier_options ;
+            $method = $this->rateMethodFactory->create(); 
 
             $method->setCarrier($this->_code);
-
             $method->setMethod($rate->carrier_id . '_' . ($rate->has_pickup ? 'pickup_' : '' ) . $rate->id); // this identifies this method
 
-          
-            //$method->setCarrierTitle($title); 
+            $carrierTitle = $global_name; 
 
-            $method->setMethodTitle($title);
+            if (!$global_name) { 
+                $carrierTitle = $rate->display_name; 
+            }
+            else {
+                $method->setMethodTitle( $rate->display_name );
+            }
+          
+            $method->setCarrierTitle($carrierTitle); 
 
             if ($request->getFreeShipping() === true || $request->getPackageQty() == $this->getFreeBoxes()) {
                 $shippingPrice = '0.00';

@@ -34,7 +34,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
         $this->shipmentInterface = $shipmentInterface; 
     
         $this->multiShipFactory = $multiShipFactory;
-        $this->is_dev = file_exists($directory_list->getRoot().'/isdevmachine') ? 1 : 0; 
+        $this->is_dev = defined('SHIPTIMIZE_DEV') ? 1 : 0; 
     }
 
     /**
@@ -68,7 +68,6 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
 
         return $this->executeSQL($sql);
     }
-
 
     /**
      * insert order meta , don't forget to escape the strings
@@ -113,7 +112,7 @@ class ShiptimizeOrderMagento extends \Shiptimize\Shipping\Model\Core\ShiptimizeO
                 $this->setStatus(ShiptimizeOrder::$STATUS_EXPORTED_SUCCESSFULLY);
                 $this->addMessage($this->getFormatedMessage("Order Exists"));
             } else {
-                $messages.= $this->getFormatedMessage($error->Tekst);
+                $messages .= $this->getFormatedMessage($error->Tekst);
             }
         }
 
